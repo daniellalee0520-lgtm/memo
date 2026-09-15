@@ -2,14 +2,18 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
-  background: #f5f6f8;
-  color: #222;
+  background: #f5f7fa;
+  color: #172033;
   font-family:
     -apple-system,
     BlinkMacSystemFont,
-    "SF Pro Display",
+    "SF Pro Text",
     "Helvetica Neue",
     Arial,
     sans-serif;
@@ -27,379 +31,498 @@ button {
 }
 
 .app {
-  max-width: 900px;
+  max-width: 850px;
   margin: auto;
-  padding: 20px 16px 100px;
+  padding: 14px 16px 90px;
 }
 
 
-/* ====================
+/* =========================
    顶部
-==================== */
+========================= */
 
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .app-title {
-  font-size: 28px;
-  font-weight: 800;
+  font-size: 23px;
+  font-weight: 750;
+  letter-spacing: -0.5px;
 }
 
 .app-subtitle {
-  color: #888;
-  font-size: 12px;
-  margin-top: 3px;
+  color: #8b929d;
+  font-size: 11px;
+  margin-top: 2px;
 }
 
 .person-btn {
-  width: 44px;
-  height: 44px;
-  border: none;
+  width: 38px;
+  height: 38px;
+  border: 1px solid #e0e5ed;
   border-radius: 50%;
   background: white;
-  font-size: 21px;
-  box-shadow: 0 3px 12px rgba(0,0,0,.08);
+  font-size: 18px;
 }
 
 
-/* ====================
+/* =========================
    管理对象
-==================== */
+========================= */
 
 .person-selector {
   background: white;
-  border-radius: 16px;
-  padding: 14px 16px;
-  margin-bottom: 15px;
-  box-shadow: 0 3px 12px rgba(0,0,0,.04);
+  border: 1px solid #e0e5ed;
+  border-radius: 14px;
+  padding: 9px 12px;
+  margin-bottom: 10px;
 }
 
 .person-selector label {
   display: block;
-  font-size: 12px;
-  color: #888;
-  margin-bottom: 5px;
+  color: #8b929d;
+  font-size: 10px;
+  margin-bottom: 2px;
 }
 
 .person-selector select {
   width: 100%;
   border: none;
-  background: transparent;
-  font-size: 17px;
-  font-weight: 700;
   outline: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 700;
+  color: #172033;
 }
 
 
-/* ====================
+/* =========================
    仪表盘
-==================== */
+========================= */
 
 .dashboard {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 9px;
+  margin-bottom: 12px;
 }
 
 .stat-card {
+  min-height: 74px;
   background: white;
-  border-radius: 16px;
-  padding: 14px;
+  border: 1px solid #e3e7ee;
+  border-radius: 15px;
+  padding: 10px 11px;
+
   display: flex;
   align-items: center;
-  gap: 9px;
-  box-shadow: 0 3px 12px rgba(0,0,0,.04);
+  gap: 8px;
 }
 
 .stat-icon {
-  font-size: 21px;
+  font-size: 19px;
 }
 
 .stat-number {
-  font-size: 21px;
+  font-size: 20px;
+  line-height: 1;
   font-weight: 800;
 }
 
 .stat-label {
-  font-size: 11px;
-  color: #888;
-  margin-top: 2px;
+  color: #8a919b;
+  font-size: 10px;
+  margin-top: 4px;
 }
 
 .stat-card.danger {
-  background: #fff4f4;
+  background: #fff7f7;
 }
 
 .stat-card.warning {
-  background: #fff9ed;
+  background: #fffaf0;
 }
 
 .stat-card.low {
-  background: #fff5f0;
+  background: #fff7f3;
 }
 
 
-/* ====================
+/* =========================
    搜索
-==================== */
+========================= */
 
 .search-box {
-  background: white;
-  border-radius: 15px;
-  padding: 12px 15px;
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
-  box-shadow: 0 3px 12px rgba(0,0,0,.04);
+
+  background: white;
+  border: 1px solid #dfe4ec;
+  border-radius: 13px;
+
+  padding: 10px 13px;
+  margin-bottom: 9px;
+}
+
+.search-box span {
+  font-size: 20px;
 }
 
 .search-box input {
+  width: 100%;
   border: none;
   outline: none;
-  width: 100%;
-  font-size: 15px;
   background: transparent;
+
+  color: #172033;
+  font-size: 14px;
+}
+
+.search-box input::placeholder {
+  color: #a3a8b0;
 }
 
 
-/* ====================
+/* =========================
    筛选
-==================== */
+========================= */
 
 .filters {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .filters select {
-  border: none;
+  width: 100%;
   background: white;
-  padding: 11px 9px;
+  border: 1px solid #dfe4ec;
   border-radius: 12px;
+
+  padding: 10px 11px;
   outline: none;
+
+  color: #172033;
   font-size: 13px;
 }
 
 
-/* ====================
+/* =========================
    物品卡片
-==================== */
+========================= */
 
 .item-card {
   background: white;
+  border: 1px solid #dfe4ec;
   border-radius: 18px;
+
   padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 3px 14px rgba(0,0,0,.05);
+  margin-bottom: 11px;
 }
+
+
+/* 顶部 */
 
 .item-top {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+
   gap: 10px;
 }
 
 .item-name {
-  font-size: 18px;
+  color: #172033;
+  font-size: 21px;
+  line-height: 1.25;
   font-weight: 800;
 }
 
 .item-meta {
-  color: #888;
-  font-size: 12px;
-  margin-top: 5px;
-  line-height: 1.6;
+  color: #737b88;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 4px;
 }
 
+
+/* 状态 */
+
 .status-badge {
-  white-space: nowrap;
-  height: fit-content;
-  padding: 5px 9px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 700;
-  background: #edf7ee;
+  flex-shrink: 0;
+
+  padding: 6px 10px;
+  border-radius: 18px;
+
+  background: #e9f8ed;
+  color: #188344;
+
+  font-size: 12px;
+  font-weight: 650;
 }
 
 .status-badge.expired {
-  background: #ffe9e9;
+  background: #ffe8e8;
+  color: #d22d2d;
 }
 
 .status-badge.soon {
-  background: #fff2d6;
+  background: #fff1d8;
+  color: #c77a00;
 }
 
 .status-badge.low {
-  background: #ffe8dc;
+  background: #fff0e8;
+  color: #dc5a18;
 }
 
 .status-badge.empty {
-  background: #eee;
+  background: #eceef1;
+  color: #68707c;
 }
 
 
-/* ====================
-   数量区域
-==================== */
+/* =========================
+   标签
+========================= */
+
+.item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.item-tag {
+  display: inline-flex;
+  align-items: center;
+
+  padding: 5px 10px;
+  border-radius: 15px;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  background: #e9f2ff;
+  color: #2166d1;
+}
+
+.item-tag.green {
+  background: #e5f8eb;
+  color: #16833e;
+}
+
+.item-tag.red {
+  background: #ffe8e8;
+  color: #d22d2d;
+}
+
+.item-tag.orange {
+  background: #fff1dc;
+  color: #bd7100;
+}
+
+
+/* =========================
+   当前余量
+========================= */
+
+.quantity-box {
+  background: #f7f9fb;
+  border-radius: 14px;
+
+  padding: 11px 12px;
+  margin-top: 11px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quantity-title {
+  color: #7c8490;
+  font-size: 12px;
+}
+
+.quantity-value {
+  color: #172033;
+  font-size: 26px;
+  line-height: 1.1;
+  font-weight: 800;
+  margin-top: 3px;
+}
+
+.quantity-buttons {
+  display: flex;
+  gap: 7px;
+}
+
+.quantity-buttons button {
+  width: 42px;
+  height: 42px;
+
+  border-radius: 11px;
+  border: 1px solid #d8dfe8;
+
+  background: white;
+  color: #1681ee;
+
+  font-size: 23px;
+  line-height: 1;
+}
+
+
+/* =========================
+   详细信息
+========================= */
 
 .item-info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 14px;
+  gap: 8px;
+
+  margin-top: 9px;
 }
 
 .info-box {
-  background: #f7f7f8;
-  border-radius: 12px;
-  padding: 10px;
+  background: #f7f9fb;
+  border-radius: 11px;
+  padding: 9px 11px;
+
+  min-height: 59px;
 }
 
 .info-title {
+  color: #7c8490;
   font-size: 11px;
-  color: #888;
+  margin-bottom: 4px;
 }
 
 .info-value {
-  margin-top: 3px;
-  font-size: 16px;
-  font-weight: 700;
+  color: #253044;
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 650;
 }
 
-
-/* ====================
-   均价
-==================== */
-
-.average-price {
-  color: #333;
+.info-value.average-price {
+  font-size: 15px;
 }
 
 .average-price small {
   display: block;
-  color: #999;
+  color: #a0a5ad;
   font-size: 10px;
-  font-weight: normal;
-  margin-top: 2px;
+  font-weight: 400;
+  margin-top: 3px;
 }
 
 
-/* ====================
-   快速数量按钮
-==================== */
-
-.quantity-control {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-.quantity-control button {
-  width: 38px;
-  height: 36px;
-  border: none;
-  border-radius: 10px;
-  background: #f0f1f3;
-  font-size: 20px;
-}
-
-.quantity-number {
-  min-width: 65px;
-  text-align: center;
-  font-weight: 800;
-}
-
-
-/* ====================
-   卡片操作
-==================== */
+/* =========================
+   操作按钮
+========================= */
 
 .item-actions {
   display: flex;
+  justify-content: flex-end;
   gap: 8px;
-  margin-top: 13px;
+
+  margin-top: 10px;
 }
 
 .item-actions button {
-  flex: 1;
-  border: none;
-  border-radius: 10px;
-  padding: 9px;
-  background: #f2f2f4;
+  min-width: 90px;
+
+  background: white;
+  border: 1px solid #d9dfe8;
+  border-radius: 11px;
+
+  padding: 8px 13px;
+
+  color: #1681ee;
   font-size: 13px;
+  font-weight: 650;
 }
 
 .item-actions .delete {
-  color: #d33;
+  color: #1681ee;
 }
 
 
-/* ====================
+/* =========================
    添加按钮
-==================== */
+========================= */
 
 .add-button {
   position: fixed;
-  bottom: 22px;
+
   left: 50%;
+  bottom: 18px;
+
   transform: translateX(-50%);
 
+  z-index: 50;
+
   border: none;
-  border-radius: 30px;
-  padding: 15px 25px;
+  border-radius: 28px;
 
   background: #111;
   color: white;
 
+  padding: 13px 23px;
+
   font-size: 15px;
   font-weight: 700;
 
-  box-shadow: 0 8px 25px rgba(0,0,0,.22);
-
-  z-index: 20;
+  box-shadow:
+    0 7px 22px rgba(0, 0, 0, .18);
 }
 
 
-/* ====================
+/* =========================
    数据工具
-==================== */
+========================= */
 
 .data-tools {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  margin-top: 20px;
+
+  margin: 13px 0 15px;
 }
 
 .data-tools button {
-  border: none;
   background: white;
-  border-radius: 12px;
-  padding: 10px 5px;
-  font-size: 11px;
+  border: 1px solid #d9dfe8;
+  border-radius: 11px;
+
+  padding: 8px 13px;
+
+  color: #1681ee;
+  font-size: 13px;
 }
 
 
-/* ====================
+/* =========================
    弹窗
-==================== */
+========================= */
 
 .modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.4);
+
   display: none;
   align-items: flex-end;
   justify-content: center;
+
+  background: rgba(0, 0, 0, .38);
+
   z-index: 100;
 }
 
@@ -408,195 +531,253 @@ button {
 }
 
 .modal-content {
-  background: white;
   width: 100%;
   max-width: 650px;
+
   max-height: 92vh;
   overflow-y: auto;
 
-  border-radius: 24px 24px 0 0;
+  background: white;
 
-  padding: 20px 18px 35px;
+  border-radius: 20px 20px 0 0;
+
+  padding: 17px 16px 30px;
 }
 
 .modal-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
+  justify-content: space-between;
+
+  margin-bottom: 14px;
 }
 
 .modal-header h2 {
   margin: 0;
-  font-size: 21px;
+  font-size: 20px;
 }
 
 .modal-header button {
-  width: 35px;
-  height: 35px;
+  width: 34px;
+  height: 34px;
+
   border: none;
   border-radius: 50%;
-  background: #f1f1f1;
-  font-size: 23px;
+
+  background: #f0f2f5;
+
+  font-size: 22px;
 }
 
 
-/* ====================
+/* =========================
    表单
-==================== */
+========================= */
 
 label {
   display: block;
-  font-size: 13px;
+
+  color: #4c5563;
+  font-size: 12px;
   font-weight: 600;
-  margin-bottom: 13px;
+
+  margin-bottom: 11px;
 }
 
 label input,
 label select,
 label textarea {
   display: block;
+
   width: 100%;
-  margin-top: 6px;
 
-  border: 1px solid #e3e3e5;
-  border-radius: 11px;
+  margin-top: 5px;
 
-  padding: 11px;
+  border: 1px solid #dfe4ec;
+  border-radius: 10px;
+
+  padding: 10px;
+
+  background: #fafbfc;
+  color: #172033;
 
   outline: none;
-  background: #fafafa;
+
+  font-size: 14px;
 }
 
 label input:focus,
 label select:focus,
 label textarea:focus {
-  border-color: #999;
   background: white;
+  border-color: #9eb7d8;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 9px;
 }
 
 
-/* ====================
-   价格
-==================== */
+/* =========================
+   价格区域
+========================= */
 
 .price-section {
-  background: #faf8f3;
-  border-radius: 16px;
-  padding: 13px;
-  margin: 8px 0 14px;
+  background: #faf9f5;
+
+  border-radius: 13px;
+
+  padding: 11px;
+
+  margin: 7px 0 12px;
 }
 
 .section-title {
-  font-weight: 800;
-  margin-bottom: 12px;
+  color: #343a44;
+
+  font-size: 13px;
+  font-weight: 750;
+
+  margin-bottom: 9px;
 }
 
 .average-price-box {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
 
   background: white;
-  border-radius: 12px;
-  padding: 12px;
-  margin-top: 3px;
+
+  border-radius: 10px;
+
+  padding: 9px 10px;
 }
 
 .average-price-box span {
   display: block;
-  font-size: 13px;
-  font-weight: 700;
+
+  color: #3d4550;
+
+  font-size: 12px;
+  font-weight: 650;
 }
 
 .average-price-box small {
   display: block;
-  color: #999;
+
+  color: #9ba1aa;
+
   font-size: 10px;
-  margin-top: 3px;
+
+  margin-top: 2px;
 }
 
 .average-price-box strong {
-  font-size: 17px;
+  color: #172033;
+
+  font-size: 15px;
 }
 
 
-/* ====================
-   保存按钮
-==================== */
+/* =========================
+   保存
+========================= */
 
 .submit-button {
   width: 100%;
+
   border: none;
+  border-radius: 11px;
+
   background: #111;
   color: white;
-  padding: 14px;
-  border-radius: 13px;
+
+  padding: 12px;
+
+  font-size: 14px;
   font-weight: 700;
-  margin-top: 5px;
 }
 
 
-/* ====================
+/* =========================
    管理对象
-==================== */
+========================= */
 
 .person-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 13px;
+  justify-content: space-between;
+
+  padding: 11px 3px;
+
   border-bottom: 1px solid #eee;
+}
+
+.person-item strong {
+  font-size: 14px;
 }
 
 .person-item button {
   border: none;
-  background: #ffecec;
-  color: #d33;
   border-radius: 8px;
-  padding: 7px 10px;
+
+  background: #ffeaea;
+  color: #d22d2d;
+
+  padding: 6px 10px;
+
+  font-size: 12px;
 }
 
 .add-person {
   display: flex;
-  gap: 8px;
-  margin-top: 15px;
+  gap: 7px;
+
+  margin-top: 13px;
 }
 
 .add-person input {
   flex: 1;
-  border: 1px solid #ddd;
+
+  border: 1px solid #dfe4ec;
   border-radius: 10px;
-  padding: 10px;
+
+  padding: 9px;
 }
 
 .add-person button {
   border: none;
   border-radius: 10px;
+
   background: #111;
   color: white;
+
   padding: 0 14px;
 }
 
 
-/* ====================
-   手机适配
-==================== */
+/* =========================
+   手机
+========================= */
 
 @media (max-width: 600px) {
 
   .app {
-    padding: 16px 12px 100px;
+    padding:
+      10px
+      12px
+      85px;
   }
 
   .dashboard {
     grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stat-card {
+    min-height: 69px;
   }
 
   .filters {
@@ -608,14 +789,56 @@ label textarea:focus {
   }
 
   .data-tools {
-    grid-template-columns: 1fr 1fr;
+    gap: 7px;
   }
 
-  .form-row {
-    grid-template-columns: 1fr 1fr;
+  .data-tools button {
+    padding: 8px 11px;
+  }
+
+  .item-card {
+    padding: 14px;
+    border-radius: 17px;
+  }
+
+  .item-name {
+    font-size: 20px;
   }
 
   .item-info-grid {
-    grid-template-columns: 1fr 1fr;
+    gap: 7px;
   }
+
+  .info-box {
+    padding: 8px 9px;
+  }
+
+  .item-actions button {
+    min-width: 82px;
+  }
+}
+
+
+/* 很小的手机 */
+
+@media (max-width: 380px) {
+
+  .app {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  .item-name {
+    font-size: 18px;
+  }
+
+  .quantity-value {
+    font-size: 23px;
+  }
+
+  .quantity-buttons button {
+    width: 38px;
+    height: 38px;
+  }
+
 }
