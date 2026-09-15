@@ -1,636 +1,498 @@
-const STORAGE_KEY = "my-item-manager-v2-1";
+/* =========================================================
+   物品管理 App 2.0
+   UI：1.0 紧凑风格
+   功能：2.0 全功能
+   ========================================================= */
 
+
+/* =========================================================
+   1. 基础数据
+   ========================================================= */
+
+const STORAGE_KEY = "my-item-manager-v2";
 
 let state = {
-  people: ["自己"],
-  currentPerson: "自己",
+  people: ["我"],
+  currentPerson: "我",
   items: []
 };
 
 
-// ============================
-// 初始化
-// ============================
+/* =========================================================
+   2. 初始化
+   ========================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
 
   loadData();
 
-  renderPeopleSelect();
-  renderCategoryFilter();
-  renderItems();
-  updateDashboard();
+  normalizeData();
+
+  setupEvents();
+
+  renderAll();
 
 });
 
 
-// ============================
-// 数据保存
-// ============================
+/* =========================================================
+   3. LocalStorage
+   ========================================================= */
+
+function loadData() {
+
+  try {
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (saved) {
+
+      const data = JSON.parse(saved);
+
+      if (data && typeof data === "object") {
+
+        state = {
+          people:
+            Array.isArray(data.people) && data.people.length
+              ? data.people
+              : ["我"],
+
+          currentPerson:
+            data.currentPerson ||
+            (Array.isArray(data.people) && data.people.length
+              ? data.people[0]
+              : "我"),
+
+          items:
+            Array.isArray(data.items)
+              ? data.items
+              : []
+        };
+
+      }
+
+    }
+
+  } catch (error) {
+
+    console.error("读取数据失败：", error);
+
+  }
+
+}
+
 
 function saveData() {
 
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify(state)
+  try {
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(state)
+    );
+
+  } catch (error) {
+
+    console.error("保存数据失败：", error);
+
+    alert("数据保存失败，请检查浏览器存储权限。");
+
+  }
+
+}
+
+
+/* =========================================================
+   4. 数据标准化
+   ========================================================= */
+
+function normalizeData() {
+
+  if (!Array.isArray(state.people) || state.people.length === 0) {
+    state.people = ["我"];
+  }
+
+  if (!state.people.includes(state.currentPerson)) {
+    state.currentPerson = state.people[0];
+  }
+
+  if (!Array.isArray(state.items)) {
+    state.items = [];
+  }
+
+  state.items = state.items.map(item => {
+
+    const purchaseQuantity =
+      Number(
+        item.purchaseQuantity ??
+        item.quantityPurchased ??
+        item.amount ??
+        0
+      ) || 0;
+
+    const price =
+      Number(
+        item.price ??
+        item.totalPrice ??
+        0
+      ) || 0;
+
+    let averagePrice =
+      Number(item.averagePrice || 0);
+
+    if (
+      purchaseQuantity > 0 &&
+      price > 0
+    ) {
+      averagePrice =
+        price / purchaseQuantity;
+    }
+
+    return {
+
+      id:
+        item.id ||
+        generateId(),
+
+      person:
+        item.person ||
+        state.currentPerson,
+
+      name:
+        item.name ||
+        "",
+
+      brand:
+        item.brand ||
+        "",
+
+      spec:
+        item.spec ||
+        "",
+
+      category:
+        item.category ||
+        "其他",
+
+      unit:
+        item.unit ||
+        "个",
+
+      quantity:
+        Number(item.quantity ?? 0) || 0,
+
+      minimum:
+        Number(item.minimum ?? 0) || 0,
+
+      expiry:
+        item.expiry ||
+        "",
+
+      location:
+        item.location ||
+        "",
+
+      purchaseDate:
+        item.purchaseDate ||
+        "",
+
+      notes:
+        item.notes ||
+        "",
+
+      price:
+        price,
+
+      purchaseQuantity:
+        purchaseQuantity,
+
+      averagePrice:
+        averagePrice,
+
+      createdAt:
+        item.createdAt ||
+        Date.now()
+
+    };
+
+  });
+
+  saveData();
+
+}
+
+
+/* =========================================================
+   5. 工具函数
+   ========================================================= */
+
+function generateId() {
+
+  return (
+    Date.now().toString(36) +
+    Math.random().toString(36).substring(2, 9)
   );
 
 }
 
 
-function loadData() {
+function escapeHTML(value) {
 
-  const saved = localStorage.getItem(STORAGE_KEY);
+  if (value === null || value === undefined) {
+    return "";
+  }
 
-  if (!saved) return;
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 
-  try {
+}
 
-    const data = JSON.parse(saved);
 
-    if (data.people) {
-      state.people = data.people;
-    }
+function escapeJS(value) {
 
-    if (data.currentPerson) {
-      state.currentPerson = data.currentPerson;
-    }
+  return String(value || "")
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'");
+}
 
-    if (data.items) {
-      state.items = data.items;
-    }
 
-  } catch (error) {
+function $(selector) {
 
-    console.error("读取数据失败", error);
+  return document.querySelector(selector);
+
+}
+
+
+function $all(selector) {
+
+  return Array.from(
+    document.querySelectorAll(selector)
+  );
+
+}
+
+
+/* =========================================================
+   6. 事件
+   ========================================================= */
+
+function setupEvents() {
+
+  const searchInput =
+    $("#searchInput") ||
+    $("#search");
+
+  if (searchInput) {
+
+    searchInput.addEventListener(
+      "input",
+      renderItems
+    );
 
   }
 
-}
+
+  const categoryFilter =
+    $("#categoryFilter");
+
+  if (categoryFilter) {
+
+    categoryFilter.addEventListener(
+      "change",
+      renderItems
+    );
+
+  }
 
 
-// ============================
-// 管理对象
-// ============================
+  const statusFilter =
+    $("#statusFilter");
 
-function renderPeopleSelect() {
+  if (statusFilter) {
 
-  const select = document.getElementById("personSelect");
+    statusFilter.addEventListener(
+      "change",
+      renderItems
+    );
 
-  select.innerHTML = "";
-
-  state.people.forEach(person => {
-
-    const option = document.createElement("option");
-
-    option.value = person;
-    option.textContent = person;
-
-    if (person === state.currentPerson) {
-      option.selected = true;
-    }
-
-    select.appendChild(option);
-
-  });
-
-}
+  }
 
 
-function changePerson() {
+  const sortSelect =
+    $("#sortSelect");
 
-  state.currentPerson =
-    document.getElementById("personSelect").value;
+  if (sortSelect) {
 
-  saveData();
+    sortSelect.addEventListener(
+      "change",
+      renderItems
+    );
 
-  renderItems();
-  updateDashboard();
-
-}
-
-
-function openPeopleModal() {
-
-  renderPeopleList();
-
-  document
-    .getElementById("peopleModal")
-    .classList.add("show");
-
-}
+  }
 
 
-function closePeopleModal() {
+  const personSelect =
+    $("#personSelect") ||
+    $("#personSelector");
 
-  document
-    .getElementById("peopleModal")
-    .classList.remove("show");
+  if (personSelect) {
 
-}
+    personSelect.addEventListener(
+      "change",
+      event => {
 
+        state.currentPerson =
+          event.target.value;
 
-function renderPeopleList() {
+        saveData();
 
-  const container =
-    document.getElementById("peopleList");
+        renderAll();
 
-  container.innerHTML = "";
-
-  state.people.forEach(person => {
-
-    const div = document.createElement("div");
-
-    div.className = "person-item";
-
-    div.innerHTML = `
-      <strong>${escapeHTML(person)}</strong>
-      ${
-        state.people.length > 1
-        ? `<button onclick="deletePerson('${escapeJS(person)}')">删除</button>`
-        : ""
       }
-    `;
+    );
 
-    container.appendChild(div);
+  }
+
+
+  /* 添加物品 */
+
+  $all(
+    '[onclick="openItemModal()"]'
+  ).forEach(button => {
+
+    button.addEventListener(
+      "click",
+      event => {
+
+        event.preventDefault();
+
+        openItemModal();
+
+      }
+    );
 
   });
 
 }
 
 
-function addPerson() {
+/* =========================================================
+   7. 获取当前管理对象物品
+   ========================================================= */
 
-  const input =
-    document.getElementById("newPersonName");
+function getCurrentItems() {
 
-  const name = input.value.trim();
-
-  if (!name) return;
-
-  if (state.people.includes(name)) {
-
-    alert("这个管理对象已经存在");
-
-    return;
-
-  }
-
-  state.people.push(name);
-
-  state.currentPerson = name;
-
-  input.value = "";
-
-  saveData();
-
-  renderPeopleSelect();
-  renderPeopleList();
-  renderItems();
-  updateDashboard();
+  return state.items.filter(
+    item =>
+      item.person === state.currentPerson
+  );
 
 }
 
 
-function deletePerson(person) {
+/* =========================================================
+   8. 日期计算
+   ========================================================= */
 
-  if (state.people.length <= 1) {
+function getDaysUntilExpiry(expiry) {
 
-    alert("至少需要保留一个管理对象");
-
-    return;
-
+  if (!expiry) {
+    return null;
   }
 
-  if (
-    !confirm(
-      `确定删除「${person}」这个管理对象吗？`
-    )
-  ) {
+  const today =
+    new Date();
 
-    return;
+  today.setHours(
+    0,
+    0,
+    0,
+    0
+  );
 
+  const expiryDate =
+    new Date(
+      `${expiry}T00:00:00`
+    );
+
+  if (isNaN(expiryDate.getTime())) {
+    return null;
   }
 
-  state.people =
-    state.people.filter(p => p !== person);
-
-  if (state.currentPerson === person) {
-
-    state.currentPerson =
-      state.people[0];
-
-  }
-
-  saveData();
-
-  renderPeopleSelect();
-  renderPeopleList();
-  renderItems();
-  updateDashboard();
-
-}
-
-
-// ============================
-// 分类
-// ============================
-
-function renderCategoryFilter() {
-
-  const select =
-    document.getElementById("categoryFilter");
-
-  const current =
-    select.value || "all";
-
-  const categories =
-    [
-      ...new Set(
-        state.items
-          .filter(item =>
-            item.person === state.currentPerson
-          )
-          .map(item => item.category)
-          .filter(Boolean)
-      )
-    ]
-    .sort();
-
-  select.innerHTML =
-    `<option value="all">全部分类</option>`;
-
-  categories.forEach(category => {
-
-    const option =
-      document.createElement("option");
-
-    option.value = category;
-    option.textContent = category;
-
-    select.appendChild(option);
-
-  });
-
-  if (
-    categories.includes(current)
-  ) {
-
-    select.value = current;
-
-  }
-
-}
-
-
-// ============================
-// 添加物品
-// ============================
-
-function openItemModal(itemId = null) {
-
-  document
-    .getElementById("itemModal")
-    .classList.add("show");
-
-  document
-    .getElementById("itemForm")
-    .reset();
-
-  document
-    .getElementById("itemId")
-    .value = "";
-
-  document
-    .getElementById("itemMinimum")
-    .value = 0;
-
-  document
-    .getElementById("modalTitle")
-    .textContent = "添加物品";
-
-  document
-    .getElementById("averagePricePreview")
-    .textContent = "¥0.00 / 个";
-
-
-  if (itemId) {
-
-    const item =
-      state.items.find(
-        x => x.id === itemId
-      );
-
-    if (!item) return;
-
-    document
-      .getElementById("modalTitle")
-      .textContent = "编辑物品";
-
-    document
-      .getElementById("itemId")
-      .value = item.id;
-
-    document
-      .getElementById("itemName")
-      .value = item.name || "";
-
-    document
-      .getElementById("itemBrand")
-      .value = item.brand || "";
-
-    document
-      .getElementById("itemCategory")
-      .value = item.category || "";
-
-    document
-      .getElementById("itemSpec")
-      .value = item.spec || "";
-
-    document
-      .getElementById("itemUnit")
-      .value = item.unit || "个";
-
-    document
-      .getElementById("itemPrice")
-      .value = item.price ?? "";
-
-    document
-      .getElementById("itemPurchaseQuantity")
-      .value =
-        item.purchaseQuantity ?? "";
-
-    document
-      .getElementById("itemQuantity")
-      .value =
-        item.quantity ?? 0;
-
-    document
-      .getElementById("itemMinimum")
-      .value =
-        item.minimum ?? 0;
-
-    document
-      .getElementById("itemExpiry")
-      .value =
-        item.expiry || "";
-
-    document
-      .getElementById("itemLocation")
-      .value =
-        item.location || "";
-
-    document
-      .getElementById("itemNotes")
-      .value =
-        item.notes || "";
-
-    updateAveragePrice();
-
-  }
-
-}
-
-
-function closeItemModal() {
-
-  document
-    .getElementById("itemModal")
-    .classList.remove("show");
-
-}
-
-
-// ============================
-// 均价计算
-// ============================
-
-function updateAveragePrice() {
-
-  const price =
-    parseFloat(
-      document.getElementById("itemPrice").value
-    ) || 0;
-
-  const purchaseQuantity =
-    parseFloat(
-      document
-        .getElementById("itemPurchaseQuantity")
-        .value
-    ) || 0;
-
-  const unit =
-    document.getElementById("itemUnit").value;
-
-  let average = 0;
-
-  if (purchaseQuantity > 0) {
-
-    average =
-      price / purchaseQuantity;
-
-  }
-
-  document
-    .getElementById("averagePricePreview")
-    .textContent =
-      `¥${average.toFixed(2)} / ${unit}`;
-
-}
-
-
-// ============================
-// 保存物品
-// ============================
-
-function saveItem(event) {
-
-  event.preventDefault();
-
-  const id =
-    document.getElementById("itemId").value;
-
-  const price =
-    parseFloat(
-      document.getElementById("itemPrice").value
-    ) || 0;
-
-  const purchaseQuantity =
-    parseFloat(
-      document
-        .getElementById("itemPurchaseQuantity")
-        .value
-    ) || 0;
-
-  const averagePrice =
-    purchaseQuantity > 0
-      ? price / purchaseQuantity
-      : 0;
-
-
-  const item = {
-
-    id:
-      id ||
-      Date.now().toString(),
-
-    person:
-      state.currentPerson,
-
-    name:
-      document
-        .getElementById("itemName")
-        .value.trim(),
-
-    brand:
-      document
-        .getElementById("itemBrand")
-        .value.trim(),
-
-    category:
-      document
-        .getElementById("itemCategory")
-        .value.trim(),
-
-    spec:
-      document
-        .getElementById("itemSpec")
-        .value.trim(),
-
-    unit:
-      document
-        .getElementById("itemUnit")
-        .value,
-
-    // 价格
-    price: price,
-
-    // 买了多少
-    purchaseQuantity:
-      purchaseQuantity,
-
-    // 自动计算的均价
-    averagePrice:
-      averagePrice,
-
-    // 当前剩余数量
-    quantity:
-      parseFloat(
-        document
-          .getElementById("itemQuantity")
-          .value
-      ) || 0,
-
-    minimum:
-      parseFloat(
-        document
-          .getElementById("itemMinimum")
-          .value
-      ) || 0,
-
-    expiry:
-      document
-        .getElementById("itemExpiry")
-        .value,
-
-    location:
-      document
-        .getElementById("itemLocation")
-        .value.trim(),
-
-    notes:
-      document
-        .getElementById("itemNotes")
-        .value.trim(),
-
-    addedAt:
-      id
-        ? (
-            state.items.find(
-              x => x.id === id
-            )?.addedAt ||
-            Date.now()
-          )
-        : Date.now()
-
-  };
-
-
-  if (id) {
-
-    const index =
-      state.items.findIndex(
-        x => x.id === id
-      );
-
-    if (index !== -1) {
-
-      state.items[index] = item;
-
-    }
-
-  } else {
-
-    state.items.push(item);
-
-  }
-
-
-  saveData();
-
-  closeItemModal();
-
-  renderCategoryFilter();
-  renderItems();
-  updateDashboard();
-
-}
-
-
-// ============================
-// 状态判断
-// ============================
-
-function getExpiryDays(expiry) {
-
-  if (!expiry) return null;
-
-  const today = new Date();
-
-  today.setHours(0, 0, 0, 0);
-
-  const date = new Date(expiry);
-
-  date.setHours(0, 0, 0, 0);
-
-  return Math.ceil(
-    (date - today) /
+  const difference =
+    expiryDate.getTime() -
+    today.getTime();
+
+  return Math.round(
+    difference /
     (1000 * 60 * 60 * 24)
   );
 
 }
 
 
+/* =========================================================
+   9. 到期文字
+   ========================================================= */
+
+function getExpiryText(expiry) {
+
+  const days =
+    getDaysUntilExpiry(expiry);
+
+  if (days === null) {
+    return "无到期日";
+  }
+
+  if (days < 0) {
+
+    return `已过期 ${Math.abs(days)} 天`;
+
+  }
+
+  if (days === 0) {
+
+    return "今天到期";
+
+  }
+
+  return `剩余 ${days} 天`;
+
+}
+
+
+/* =========================================================
+   10. 状态
+   ========================================================= */
+
 function getItemStatus(item) {
 
-  if (item.quantity <= 0) {
+  if (Number(item.quantity) <= 0) {
 
     return "empty";
 
   }
 
   const days =
-    getExpiryDays(item.expiry);
+    getDaysUntilExpiry(item.expiry);
 
-  if (days !== null && days < 0) {
+  if (
+    days !== null &&
+    days < 0
+  ) {
 
     return "expired";
 
   }
 
   if (
-    item.minimum > 0 &&
-    item.quantity <= item.minimum
+    Number(item.minimum) > 0 &&
+    Number(item.quantity) <=
+      Number(item.minimum)
   ) {
 
     return "low";
@@ -651,107 +513,216 @@ function getItemStatus(item) {
 }
 
 
+/* =========================================================
+   11. 状态文字
+   ========================================================= */
+
 function getStatusText(status) {
 
-  const map = {
+  switch (status) {
 
-    normal: "正常",
+    case "expired":
+      return "已过期";
 
-    soon: "即将到期",
+    case "soon":
+      return "即将到期";
 
-    expired: "已过期",
+    case "low":
+      return "余量告急";
 
-    low: "余量告急",
+    case "empty":
+      return "已用完";
 
-    empty: "已用完"
+    default:
+      return "正常";
 
-  };
-
-  return map[status] || status;
+  }
 
 }
 
 
-// ============================
-// 到期显示
-// ============================
+/* =========================================================
+   12. 仪表盘
+   ========================================================= */
 
-function getExpiryText(expiry) {
+function renderDashboard() {
 
-  if (!expiry) {
+  const items =
+    getCurrentItems();
 
-    return "无到期日";
+  let expired = 0;
+  let soon = 0;
+  let low = 0;
 
-  }
+  items.forEach(item => {
 
-  const days =
-    getExpiryDays(expiry);
+    const status =
+      getItemStatus(item);
 
-  if (days < 0) {
+    if (status === "expired") {
+      expired++;
+    }
 
-    return `已过期 ${Math.abs(days)} 天`;
+    if (status === "soon") {
+      soon++;
+    }
 
-  }
+    if (
+      status === "low" ||
+      status === "empty"
+    ) {
+      low++;
+    }
 
-  if (days === 0) {
+  });
 
-    return "今天到期";
 
-  }
+  setText(
+    "#totalItems",
+    items.length
+  );
 
-  if (days === 1) {
+  setText(
+    "#expiredItems",
+    expired
+  );
 
-    return "明天到期";
+  setText(
+    "#soonItems",
+    soon
+  );
 
-  }
+  setText(
+    "#lowItems",
+    low
+  );
 
-  return `${days} 天后到期`;
+
+  /* 兼容可能的旧 ID */
+
+  setText(
+    "#statItems",
+    items.length
+  );
+
+  setText(
+    "#statExpired",
+    expired
+  );
+
+  setText(
+    "#statSoon",
+    soon
+  );
+
+  setText(
+    "#statLow",
+    low
+  );
 
 }
 
 
-// ============================
-// 渲染物品
-// ============================
+/* =========================================================
+   13. 设置文字
+   ========================================================= */
 
-function renderItems() {
+function setText(selector, value) {
 
-  const container =
-    document.getElementById("itemList");
+  const element =
+    $(selector);
 
-  const search =
-    document
-      .getElementById("searchInput")
-      .value
-      .trim()
-      .toLowerCase();
+  if (element) {
 
-  const category =
-    document
-      .getElementById("categoryFilter")
-      .value;
+    element.textContent =
+      value;
 
-  const statusFilter =
-    document
-      .getElementById("statusFilter")
-      .value;
+  }
 
-  const sort =
-    document
-      .getElementById("sortSelect")
-      .value;
+}
 
+
+/* =========================================================
+   14. 分类
+   ========================================================= */
+
+function getCategories() {
+
+  const categories =
+    getCurrentItems()
+      .map(item => item.category)
+      .filter(Boolean);
+
+  return [
+    ...new Set(categories)
+  ];
+
+}
+
+
+function renderCategoryFilter() {
+
+  const select =
+    $("#categoryFilter");
+
+  if (!select) {
+    return;
+  }
+
+  const oldValue =
+    select.value;
+
+  const categories =
+    getCategories();
+
+  select.innerHTML =
+    `<option value="">全部分类</option>` +
+    categories
+      .sort((a, b) =>
+        a.localeCompare(b, "zh")
+      )
+      .map(
+        category =>
+          `<option value="${escapeHTML(category)}">
+             ${escapeHTML(category)}
+           </option>`
+      )
+      .join("");
+
+  if (
+    categories.includes(oldValue)
+  ) {
+
+    select.value =
+      oldValue;
+
+  }
+
+}
+
+
+/* =========================================================
+   15. 搜索 + 筛选 + 排序
+   ========================================================= */
+
+function getFilteredItems() {
 
   let items =
-    state.items.filter(
-      item =>
-        item.person === state.currentPerson
-    );
+    [...getCurrentItems()];
+
+  const searchInput =
+    $("#searchInput") ||
+    $("#search");
+
+  const keyword =
+    searchInput
+      ? searchInput.value
+        .trim()
+        .toLowerCase()
+      : "";
 
 
-  // 搜索
-
-  if (search) {
+  if (keyword) {
 
     items =
       items.filter(item => {
@@ -769,16 +740,23 @@ function renderItems() {
           .join(" ")
           .toLowerCase();
 
-        return text.includes(search);
+        return text.includes(keyword);
 
       });
 
   }
 
 
-  // 分类
+  const categoryFilter =
+    $("#categoryFilter");
 
-  if (category !== "all") {
+  const category =
+    categoryFilter
+      ? categoryFilter.value
+      : "";
+
+
+  if (category) {
 
     items =
       items.filter(
@@ -789,103 +767,149 @@ function renderItems() {
   }
 
 
-  // 状态
+  const statusFilter =
+    $("#statusFilter");
 
-  if (statusFilter !== "all") {
+  const status =
+    statusFilter
+      ? statusFilter.value
+      : "";
+
+
+  if (status) {
 
     items =
       items.filter(
         item =>
-          getItemStatus(item) ===
-          statusFilter
+          getItemStatus(item) === status
       );
 
   }
 
 
-  // 排序
+  const sortSelect =
+    $("#sortSelect");
 
-  if (sort === "name") {
+  const sort =
+    sortSelect
+      ? sortSelect.value
+      : "created";
 
-    items.sort(
-      (a, b) =>
-        a.name.localeCompare(
-          b.name,
-          "zh-CN"
-        )
-    );
 
+  items.sort(
+    (a, b) => {
+
+      switch (sort) {
+
+        case "name":
+
+          return a.name.localeCompare(
+            b.name,
+            "zh"
+          );
+
+
+        case "expiry": {
+
+          const da =
+            getDaysUntilExpiry(a.expiry);
+
+          const db =
+            getDaysUntilExpiry(b.expiry);
+
+          if (da === null) {
+            return 1;
+          }
+
+          if (db === null) {
+            return -1;
+          }
+
+          return da - db;
+
+        }
+
+
+        case "quantity":
+
+          return (
+            Number(a.quantity) -
+            Number(b.quantity)
+          );
+
+
+        case "price":
+
+          return (
+            Number(b.price || 0) -
+            Number(a.price || 0)
+          );
+
+
+        case "average":
+
+          return (
+            Number(a.averagePrice || 0) -
+            Number(b.averagePrice || 0)
+          );
+
+
+        case "created":
+        default:
+
+          return (
+            Number(b.createdAt || 0) -
+            Number(a.createdAt || 0)
+          );
+
+      }
+
+    }
+  );
+
+
+  return items;
+
+}
+
+
+/* =========================================================
+   16. 渲染所有物品
+   ========================================================= */
+
+function renderItems() {
+
+  const container =
+    $("#itemsList") ||
+    $("#itemList") ||
+    $("#itemsContainer");
+
+  if (!container) {
+    return;
   }
 
-
-  if (sort === "expiry") {
-
-    items.sort((a, b) => {
-
-      if (!a.expiry) return 1;
-
-      if (!b.expiry) return -1;
-
-      return (
-        new Date(a.expiry) -
-        new Date(b.expiry)
-      );
-
-    });
-
-  }
+  const items =
+    getFilteredItems();
 
 
-  if (sort === "quantity") {
-
-    items.sort(
-      (a, b) =>
-        Number(a.quantity) -
-        Number(b.quantity)
-    );
-
-  }
-
-
-  if (sort === "price") {
-
-    items.sort(
-      (a, b) =>
-        Number(
-          a.averagePrice || 0
-        ) -
-        Number(
-          b.averagePrice || 0
-        )
-    );
-
-  }
-
-
-  if (sort === "added-desc") {
-
-    items.sort(
-      (a, b) =>
-        Number(b.addedAt || 0) -
-        Number(a.addedAt || 0)
-    );
-
-  }
-
-
-  if (!items.length) {
+  if (items.length === 0) {
 
     container.innerHTML = `
+
       <div style="
+        background:white;
+        border:1px solid #dfe4ec;
+        border-radius:16px;
+        padding:30px 15px;
         text-align:center;
-        padding:50px 20px;
-        color:#999;
+        color:#8b929d;
+        font-size:14px;
       ">
-        <div style="font-size:40px;">📦</div>
-        <div style="margin-top:10px;">
-          暂时没有物品
-        </div>
+
+        暂无物品
+
       </div>
+
     `;
 
     return;
@@ -895,15 +919,18 @@ function renderItems() {
 
   container.innerHTML =
     items
-      .map(renderItemCard)
+      .map(
+        item =>
+          renderItemCard(item)
+      )
       .join("");
 
 }
 
 
-// ============================
-// 单个物品卡片
-// ============================
+/* =========================================================
+   17. 物品卡片
+   ========================================================= */
 
 function renderItemCard(item) {
 
@@ -913,28 +940,77 @@ function renderItemCard(item) {
   const expiryText =
     getExpiryText(item.expiry);
 
+  const days =
+    getDaysUntilExpiry(item.expiry);
 
-  const averagePrice =
+
+  let expiryClass =
+    "green";
+
+  if (
+    days !== null &&
+    days < 0
+  ) {
+
+    expiryClass = "red";
+
+  } else if (
+    days !== null &&
+    days <= 30
+  ) {
+
+    expiryClass = "orange";
+
+  }
+
+
+  const price =
+    Number(item.price || 0);
+
+
+  const purchaseQuantity =
+    Number(
+      item.purchaseQuantity || 0
+    );
+
+
+  let averagePrice =
     Number(
       item.averagePrice || 0
     );
 
 
-  const priceDisplay =
-    item.price > 0
-      ? `¥${Number(item.price).toFixed(2)}`
-      : "未填写";
+  /* 自动重新计算均价 */
+
+  if (
+    price > 0 &&
+    purchaseQuantity > 0
+  ) {
+
+    averagePrice =
+      price /
+      purchaseQuantity;
+
+  }
 
 
-  const averageDisplay =
+  const priceText =
+    price > 0
+      ? `¥${price.toFixed(2)}`
+      : "—";
+
+
+  const averageText =
     averagePrice > 0
       ? `¥${averagePrice.toFixed(2)} / ${escapeHTML(item.unit || "个")}`
-      : "未填写";
+      : "—";
 
 
   return `
 
     <div class="item-card">
+
+      <!-- 顶部 -->
 
       <div class="item-top">
 
@@ -948,7 +1024,14 @@ function renderItemCard(item) {
 
             ${
               item.brand
-                ? escapeHTML(item.brand) + " · "
+                ? escapeHTML(item.brand)
+                : ""
+            }
+
+            ${
+              item.brand &&
+              item.spec
+                ? " · "
                 : ""
             }
 
@@ -959,8 +1042,15 @@ function renderItemCard(item) {
             }
 
             ${
+              (item.brand || item.spec) &&
               item.category
-                ? ` · ${escapeHTML(item.category)}`
+                ? " · "
+                : ""
+            }
+
+            ${
+              item.category
+                ? escapeHTML(item.category)
                 : ""
             }
 
@@ -969,45 +1059,176 @@ function renderItemCard(item) {
         </div>
 
 
-        <div class="status-badge ${status}">
+        <div class="
+          status-badge
+          ${status}
+        ">
+
           ${getStatusText(status)}
+
         </div>
 
       </div>
 
 
-      <div class="item-info-grid">
+      <!-- 标签 -->
+
+      <div class="item-tags">
+
+        ${
+          item.category
+            ? `
+              <span class="item-tag">
+                ${escapeHTML(item.category)}
+              </span>
+            `
+            : ""
+        }
 
 
-        <!-- 当前余量 -->
+        <span class="
+          item-tag
+          ${expiryClass}
+        ">
 
-        <div class="info-box">
+          ${escapeHTML(expiryText)}
 
-          <div class="info-title">
+        </span>
+
+
+        ${
+          item.minimum > 0
+            ? `
+              <span class="item-tag">
+                最低 ${item.minimum}${escapeHTML(item.unit)}
+              </span>
+            `
+            : ""
+        }
+
+      </div>
+
+
+      <!-- 当前余量 -->
+
+      <div class="quantity-box">
+
+        <div>
+
+          <div class="quantity-title">
             当前余量
           </div>
 
-          <div class="info-value">
+          <div class="quantity-value">
 
             ${item.quantity}
-            ${escapeHTML(item.unit || "")}
+            ${escapeHTML(item.unit)}
 
           </div>
 
         </div>
 
 
-        <!-- 到期 -->
+        <div class="quantity-buttons">
+
+          <button
+            type="button"
+            onclick="changeQuantity('${escapeJS(item.id)}', -1)"
+          >
+            −
+          </button>
+
+          <button
+            type="button"
+            onclick="changeQuantity('${escapeJS(item.id)}', 1)"
+          >
+            ＋
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- 信息 -->
+
+      <div class="item-info-grid">
+
+
+        <!-- 到期日 -->
 
         <div class="info-box">
 
           <div class="info-title">
-            到期情况
+            到期日
           </div>
 
           <div class="info-value">
 
-            ${expiryText}
+            ${
+              item.expiry
+                ? escapeHTML(item.expiry)
+                : "—"
+            }
+
+          </div>
+
+        </div>
+
+
+        <!-- 状态 -->
+
+        <div class="info-box">
+
+          <div class="info-title">
+            状态
+          </div>
+
+          <div class="info-value">
+
+            ${escapeHTML(expiryText)}
+
+          </div>
+
+        </div>
+
+
+        <!-- 存放位置 -->
+
+        <div class="info-box">
+
+          <div class="info-title">
+            存放位置
+          </div>
+
+          <div class="info-value">
+
+            ${
+              item.location
+                ? escapeHTML(item.location)
+                : "—"
+            }
+
+          </div>
+
+        </div>
+
+
+        <!-- 购买日期 -->
+
+        <div class="info-box">
+
+          <div class="info-title">
+            购买日期
+          </div>
+
+          <div class="info-value">
+
+            ${
+              item.purchaseDate
+                ? escapeHTML(item.purchaseDate)
+                : "—"
+            }
 
           </div>
 
@@ -1024,7 +1245,7 @@ function renderItemCard(item) {
 
           <div class="info-value">
 
-            ${priceDisplay}
+            ${priceText}
 
           </div>
 
@@ -1039,17 +1260,23 @@ function renderItemCard(item) {
             均价
           </div>
 
-          <div class="info-value average-price">
+          <div class="
+            info-value
+            average-price
+          ">
 
-            ${averageDisplay}
+            ${averageText}
 
             ${
-              item.purchaseQuantity
-                ? `<small>
-                    ${item.price ? "¥" + Number(item.price).toFixed(2) : ""}
+              price > 0 &&
+              purchaseQuantity > 0
+                ? `
+                  <small>
+                    ¥${price.toFixed(2)}
                     ÷
-                    ${item.purchaseQuantity}${escapeHTML(item.unit || "")}
-                   </small>`
+                    ${purchaseQuantity}${escapeHTML(item.unit)}
+                  </small>
+                `
                 : ""
             }
 
@@ -1057,64 +1284,42 @@ function renderItemCard(item) {
 
         </div>
 
-      </div>
-
-
-      <!-- 快速调整余量 -->
-
-      <div class="quantity-control">
-
-        <button
-          onclick="changeQuantity('${escapeJS(item.id)}', -1)"
-        >
-          −
-        </button>
-
-        <div class="quantity-number">
-          ${item.quantity}
-          ${escapeHTML(item.unit || "")}
-        </div>
-
-        <button
-          onclick="changeQuantity('${escapeJS(item.id)}', 1)"
-        >
-          ＋
-        </button>
 
       </div>
 
 
-      ${
-        item.location
-          ? `
-            <div class="item-meta">
-              📍 ${escapeHTML(item.location)}
-            </div>
-          `
-          : ""
-      }
-
+      <!-- 备注 -->
 
       ${
         item.notes
           ? `
-            <div class="item-meta">
-              📝 ${escapeHTML(item.notes)}
+            <div
+              class="item-meta"
+              style="margin-top:9px;"
+            >
+
+              📝
+              ${escapeHTML(item.notes)}
+
             </div>
           `
           : ""
       }
 
 
+      <!-- 操作 -->
+
       <div class="item-actions">
 
         <button
+          type="button"
           onclick="openItemModal('${escapeJS(item.id)}')"
         >
           ✏️ 编辑
         </button>
 
         <button
+          type="button"
           class="delete"
           onclick="deleteItem('${escapeJS(item.id)}')"
         >
@@ -1130,139 +1335,1237 @@ function renderItemCard(item) {
 }
 
 
-// ============================
-// 快速调整数量
-// ============================
+/* =========================================================
+   18. 快速修改余量
+   ========================================================= */
 
 function changeQuantity(id, amount) {
 
   const item =
     state.items.find(
-      x => x.id === id
+      item =>
+        String(item.id) === String(id)
     );
 
-  if (!item) return;
+  if (!item) {
+    return;
+  }
+
+  const oldQuantity =
+    Number(item.quantity || 0);
 
   item.quantity =
     Math.max(
       0,
-      Number(item.quantity || 0) +
-      amount
+      oldQuantity + Number(amount)
     );
+
 
   saveData();
 
-  renderItems();
-  updateDashboard();
+  renderAll();
 
 }
 
 
-// ============================
-// 删除
-// ============================
+/* =========================================================
+   19. 打开添加 / 编辑窗口
+   ========================================================= */
+
+function openItemModal(id = null) {
+
+  let modal =
+    $("#itemModal");
+
+
+  /* 如果 HTML 没有 modal，
+     自动创建一个 */
+
+  if (!modal) {
+
+    createItemModal();
+
+    modal =
+      $("#itemModal");
+
+  }
+
+
+  const form =
+    $("#itemForm");
+
+  if (!form) {
+    return;
+  }
+
+
+  form.reset();
+
+
+  const idInput =
+    $("#itemId");
+
+  if (idInput) {
+    idInput.value =
+      id || "";
+  }
+
+
+  const title =
+    $("#itemModalTitle");
+
+
+  if (id) {
+
+    const item =
+      state.items.find(
+        item =>
+          String(item.id) === String(id)
+      );
+
+    if (!item) {
+      return;
+    }
+
+
+    if (title) {
+      title.textContent =
+        "编辑物品";
+    }
+
+
+    fillInput(
+      "itemName",
+      item.name
+    );
+
+    fillInput(
+      "itemBrand",
+      item.brand
+    );
+
+    fillInput(
+      "itemSpec",
+      item.spec
+    );
+
+    fillInput(
+      "itemCategory",
+      item.category
+    );
+
+    fillInput(
+      "itemUnit",
+      item.unit
+    );
+
+    fillInput(
+      "itemQuantity",
+      item.quantity
+    );
+
+    fillInput(
+      "itemMinimum",
+      item.minimum
+    );
+
+    fillInput(
+      "itemExpiry",
+      item.expiry
+    );
+
+    fillInput(
+      "itemLocation",
+      item.location
+    );
+
+    fillInput(
+      "itemPurchaseDate",
+      item.purchaseDate
+    );
+
+    fillInput(
+      "itemPrice",
+      item.price
+    );
+
+    fillInput(
+      "itemPurchaseQuantity",
+      item.purchaseQuantity
+    );
+
+    fillInput(
+      "itemNotes",
+      item.notes
+    );
+
+
+  } else {
+
+    if (title) {
+      title.textContent =
+        "添加物品";
+    }
+
+
+    fillInput(
+      "itemUnit",
+      "个"
+    );
+
+    fillInput(
+      "itemCategory",
+      "其他"
+    );
+
+    fillInput(
+      "itemQuantity",
+      0
+    );
+
+    fillInput(
+      "itemMinimum",
+      0
+    );
+
+
+    const today =
+      new Date()
+        .toISOString()
+        .split("T")[0];
+
+    fillInput(
+      "itemPurchaseDate",
+      today
+    );
+
+  }
+
+
+  updateAveragePreview();
+
+
+  modal.classList.add(
+    "show"
+  );
+
+}
+
+
+/* =========================================================
+   20. 创建添加窗口
+   ========================================================= */
+
+function createItemModal() {
+
+  const modal =
+    document.createElement("div");
+
+  modal.id =
+    "itemModal";
+
+  modal.className =
+    "modal";
+
+
+  modal.innerHTML = `
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h2 id="itemModalTitle">
+          添加物品
+        </h2>
+
+        <button
+          type="button"
+          onclick="closeItemModal()"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form
+        id="itemForm"
+        onsubmit="saveItem(event)"
+      >
+
+        <input
+          type="hidden"
+          id="itemId"
+        >
+
+
+        <label>
+          物品名称
+          <input
+            id="itemName"
+            required
+            placeholder="例如：卫生巾"
+          >
+        </label>
+
+
+        <div class="form-row">
+
+          <label>
+            品牌
+            <input
+              id="itemBrand"
+              placeholder="例如：护舒宝"
+            >
+          </label>
+
+
+          <label>
+            规格
+            <input
+              id="itemSpec"
+              placeholder="例如：270mm"
+            >
+          </label>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <label>
+            分类
+            <input
+              id="itemCategory"
+              placeholder="例如：日用品"
+            >
+          </label>
+
+
+          <label>
+            单位
+            <select id="itemUnit">
+
+              <option value="个">个</option>
+              <option value="片">片</option>
+              <option value="袋">袋</option>
+              <option value="瓶">瓶</option>
+              <option value="支">支</option>
+              <option value="盒">盒</option>
+              <option value="包">包</option>
+              <option value="卷">卷</option>
+              <option value="件">件</option>
+              <option value="套">套</option>
+              <option value="条">条</option>
+              <option value="双">双</option>
+              <option value="罐">罐</option>
+
+            </select>
+          </label>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <label>
+            当前余量
+            <input
+              id="itemQuantity"
+              type="number"
+              min="0"
+              step="1"
+              value="0"
+            >
+          </label>
+
+
+          <label>
+            最低余量
+            <input
+              id="itemMinimum"
+              type="number"
+              min="0"
+              step="1"
+              value="0"
+            >
+          </label>
+
+        </div>
+
+
+        <div class="form-row">
+
+          <label>
+            到期日
+            <input
+              id="itemExpiry"
+              type="date"
+            >
+          </label>
+
+
+          <label>
+            购买日期
+            <input
+              id="itemPurchaseDate"
+              type="date"
+            >
+          </label>
+
+        </div>
+
+
+        <label>
+          存放位置
+          <input
+            id="itemLocation"
+            placeholder="例如：抽屉"
+          >
+        </label>
+
+
+        <!-- 价格 -->
+
+        <div class="price-section">
+
+          <div class="section-title">
+            💰 价格信息
+          </div>
+
+
+          <div class="form-row">
+
+            <label>
+              总价格（¥）
+              <input
+                id="itemPrice"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="例如：15.21"
+              >
+            </label>
+
+
+            <label>
+              购买数量
+              <input
+                id="itemPurchaseQuantity"
+                type="number"
+                min="0"
+                step="1"
+                placeholder="例如：30"
+              >
+            </label>
+
+          </div>
+
+
+          <div class="average-price-box">
+
+            <div>
+
+              <span>
+                自动均价
+              </span>
+
+              <small>
+                总价格 ÷ 购买数量
+              </small>
+
+            </div>
+
+
+            <strong
+              id="averagePricePreview"
+            >
+              —
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <label>
+          备注
+          <textarea
+            id="itemNotes"
+            rows="2"
+            placeholder="其他备注……"
+          ></textarea>
+        </label>
+
+
+        <button
+          class="submit-button"
+          type="submit"
+        >
+          保存物品
+        </button>
+
+      </form>
+
+    </div>
+
+  `;
+
+
+  document.body.appendChild(
+    modal
+  );
+
+
+  /* 点击背景关闭 */
+
+  modal.addEventListener(
+    "click",
+    event => {
+
+      if (
+        event.target === modal
+      ) {
+
+        closeItemModal();
+
+      }
+
+    }
+  );
+
+
+  /* 均价实时计算 */
+
+  const price =
+    $("#itemPrice");
+
+  const purchaseQuantity =
+    $("#itemPurchaseQuantity");
+
+
+  if (price) {
+
+    price.addEventListener(
+      "input",
+      updateAveragePreview
+    );
+
+  }
+
+
+  if (purchaseQuantity) {
+
+    purchaseQuantity.addEventListener(
+      "input",
+      updateAveragePreview
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   21. 填充输入框
+   ========================================================= */
+
+function fillInput(id, value) {
+
+  const element =
+    document.getElementById(id);
+
+  if (element) {
+
+    element.value =
+      value ?? "";
+
+  }
+
+}
+
+
+/* =========================================================
+   22. 均价实时预览
+   ========================================================= */
+
+function updateAveragePreview() {
+
+  const price =
+    Number(
+      getValue("itemPrice")
+    );
+
+
+  const quantity =
+    Number(
+      getValue("itemPurchaseQuantity")
+    );
+
+
+  const preview =
+    $("#averagePricePreview");
+
+
+  if (!preview) {
+    return;
+  }
+
+
+  if (
+    price > 0 &&
+    quantity > 0
+  ) {
+
+    const average =
+      price / quantity;
+
+    const unit =
+      getValue("itemUnit") ||
+      "个";
+
+
+    preview.textContent =
+      `¥${average.toFixed(2)} / ${unit}`;
+
+  } else {
+
+    preview.textContent =
+      "—";
+
+  }
+
+}
+
+
+/* =========================================================
+   23. 获取表单值
+   ========================================================= */
+
+function getValue(id) {
+
+  const element =
+    document.getElementById(id);
+
+  return element
+    ? element.value
+    : "";
+
+}
+
+
+/* =========================================================
+   24. 保存物品
+   ========================================================= */
+
+function saveItem(event) {
+
+  if (event) {
+    event.preventDefault();
+  }
+
+
+  const id =
+    getValue("itemId");
+
+
+  const name =
+    getValue("itemName")
+      .trim();
+
+
+  if (!name) {
+
+    alert("请输入物品名称。");
+
+    return;
+
+  }
+
+
+  const price =
+    Number(
+      getValue("itemPrice") || 0
+    );
+
+
+  const purchaseQuantity =
+    Number(
+      getValue(
+        "itemPurchaseQuantity"
+      ) || 0
+    );
+
+
+  let averagePrice = 0;
+
+
+  if (
+    price > 0 &&
+    purchaseQuantity > 0
+  ) {
+
+    averagePrice =
+      price /
+      purchaseQuantity;
+
+  }
+
+
+  const itemData = {
+
+    person:
+      state.currentPerson,
+
+    name:
+      name,
+
+    brand:
+      getValue("itemBrand")
+        .trim(),
+
+    spec:
+      getValue("itemSpec")
+        .trim(),
+
+    category:
+      getValue("itemCategory")
+        .trim() ||
+      "其他",
+
+    unit:
+      getValue("itemUnit") ||
+      "个",
+
+    quantity:
+      Number(
+        getValue("itemQuantity") || 0
+      ),
+
+    minimum:
+      Number(
+        getValue("itemMinimum") || 0
+      ),
+
+    expiry:
+      getValue("itemExpiry"),
+
+    location:
+      getValue("itemLocation")
+        .trim(),
+
+    purchaseDate:
+      getValue("itemPurchaseDate"),
+
+    price:
+      price,
+
+    purchaseQuantity:
+      purchaseQuantity,
+
+    averagePrice:
+      averagePrice,
+
+    notes:
+      getValue("itemNotes")
+        .trim()
+
+  };
+
+
+  /* 编辑 */
+
+  if (id) {
+
+    const index =
+      state.items.findIndex(
+        item =>
+          String(item.id) ===
+          String(id)
+      );
+
+
+    if (index !== -1) {
+
+      state.items[index] = {
+
+        ...state.items[index],
+
+        ...itemData
+
+      };
+
+    }
+
+
+  } else {
+
+    /* 新增 */
+
+    state.items.push({
+
+      id:
+        generateId(),
+
+      ...itemData,
+
+      createdAt:
+        Date.now()
+
+    });
+
+  }
+
+
+  saveData();
+
+  closeItemModal();
+
+  renderAll();
+
+}
+
+
+/* =========================================================
+   25. 关闭窗口
+   ========================================================= */
+
+function closeItemModal() {
+
+  const modal =
+    $("#itemModal");
+
+  if (modal) {
+
+    modal.classList.remove(
+      "show"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   26. 删除
+   ========================================================= */
 
 function deleteItem(id) {
 
   const item =
     state.items.find(
-      x => x.id === id
+      item =>
+        String(item.id) ===
+        String(id)
     );
 
-  if (!item) return;
+
+  if (!item) {
+    return;
+  }
+
+
+  const confirmed =
+    confirm(
+      `确定删除「${item.name}」吗？`
+    );
+
+
+  if (!confirmed) {
+    return;
+  }
+
+
+  state.items =
+    state.items.filter(
+      item =>
+        String(item.id) !==
+        String(id)
+    );
+
+
+  saveData();
+
+  renderAll();
+
+}
+
+
+/* =========================================================
+   27. 管理对象
+   ========================================================= */
+
+function renderPeople() {
+
+  const select =
+    $("#personSelect") ||
+    $("#personSelector");
+
+
+  if (!select) {
+    return;
+  }
+
+
+  const oldValue =
+    state.currentPerson;
+
+
+  select.innerHTML =
+    state.people
+      .map(
+        person =>
+          `<option value="${escapeHTML(person)}">
+            ${escapeHTML(person)}
+          </option>`
+      )
+      .join("");
+
 
   if (
-    !confirm(
-      `确定删除「${item.name}」吗？`
-    )
+    state.people.includes(oldValue)
   ) {
+
+    select.value =
+      oldValue;
+
+  }
+
+}
+
+
+/* =========================================================
+   28. 管理对象窗口
+   ========================================================= */
+
+function openPeopleModal() {
+
+  let modal =
+    $("#peopleModal");
+
+
+  if (!modal) {
+
+    createPeopleModal();
+
+    modal =
+      $("#peopleModal");
+
+  }
+
+
+  renderPeopleList();
+
+
+  modal.classList.add(
+    "show"
+  );
+
+}
+
+
+function closePeopleModal() {
+
+  const modal =
+    $("#peopleModal");
+
+  if (modal) {
+
+    modal.classList.remove(
+      "show"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   29. 创建管理对象窗口
+   ========================================================= */
+
+function createPeopleModal() {
+
+  const modal =
+    document.createElement("div");
+
+  modal.id =
+    "peopleModal";
+
+  modal.className =
+    "modal";
+
+
+  modal.innerHTML = `
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+
+        <h2>
+          管理对象
+        </h2>
+
+        <button
+          type="button"
+          onclick="closePeopleModal()"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div id="peopleList">
+      </div>
+
+
+      <div class="add-person">
+
+        <input
+          id="newPersonName"
+          placeholder="输入姓名"
+        >
+
+        <button
+          type="button"
+          onclick="addPerson()"
+        >
+          添加
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  document.body.appendChild(
+    modal
+  );
+
+
+  modal.addEventListener(
+    "click",
+    event => {
+
+      if (
+        event.target === modal
+      ) {
+
+        closePeopleModal();
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   30. 渲染管理对象列表
+   ========================================================= */
+
+function renderPeopleList() {
+
+  const container =
+    $("#peopleList");
+
+  if (!container) {
+    return;
+  }
+
+
+  container.innerHTML =
+    state.people
+      .map(
+        person => `
+
+          <div class="person-item">
+
+            <strong>
+              ${escapeHTML(person)}
+            </strong>
+
+            ${
+              state.people.length > 1
+                ? `
+                  <button
+                    type="button"
+                    onclick="deletePerson('${escapeJS(person)}')"
+                  >
+                    删除
+                  </button>
+                `
+                : ""
+            }
+
+          </div>
+
+        `
+      )
+      .join("");
+
+}
+
+
+/* =========================================================
+   31. 添加管理对象
+   ========================================================= */
+
+function addPerson() {
+
+  const input =
+    $("#newPersonName");
+
+
+  if (!input) {
+    return;
+  }
+
+
+  const name =
+    input.value.trim();
+
+
+  if (!name) {
+
+    alert("请输入姓名。");
 
     return;
 
   }
 
-  state.items =
-    state.items.filter(
-      x => x.id !== id
-    );
+
+  if (
+    state.people.includes(name)
+  ) {
+
+    alert("这个管理对象已经存在。");
+
+    return;
+
+  }
+
+
+  state.people.push(name);
+
+  state.currentPerson =
+    name;
+
+
+  input.value =
+    "";
+
 
   saveData();
 
-  renderCategoryFilter();
-  renderItems();
-  updateDashboard();
+  renderAll();
+
+  renderPeopleList();
 
 }
 
 
-// ============================
-// 仪表盘
-// ============================
+/* =========================================================
+   32. 删除管理对象
+   ========================================================= */
 
-function updateDashboard() {
+function deletePerson(name) {
 
-  const items =
-    state.items.filter(
-      item =>
-        item.person === state.currentPerson
+  if (
+    state.people.length <= 1
+  ) {
+
+    alert("至少需要保留一个管理对象。");
+
+    return;
+
+  }
+
+
+  const confirmed =
+    confirm(
+      `确定删除「${name}」吗？`
     );
 
 
-  const expired =
-    items.filter(
-      item =>
-        getItemStatus(item) === "expired"
-    ).length;
+  if (!confirmed) {
+    return;
+  }
 
 
-  const soon =
-    items.filter(
-      item =>
-        getItemStatus(item) === "soon"
-    ).length;
+  state.people =
+    state.people.filter(
+      person =>
+        person !== name
+    );
 
 
-  const low =
-    items.filter(
-      item =>
-        getItemStatus(item) === "low"
-    ).length;
+  /*
+   * 这里不删除该人的物品。
+   * 只是将物品重新归到当前管理对象，
+   * 避免数据丢失。
+   */
+
+  state.items =
+    state.items.map(item => {
+
+      if (
+        item.person === name
+      ) {
+
+        return {
+
+          ...item,
+
+          person:
+            state.people[0]
+
+        };
+
+      }
+
+      return item;
+
+    });
 
 
-  document
-    .getElementById("totalCount")
-    .textContent =
-      items.length;
+  if (
+    state.currentPerson === name
+  ) {
 
-  document
-    .getElementById("expiredCount")
-    .textContent =
-      expired;
+    state.currentPerson =
+      state.people[0];
 
-  document
-    .getElementById("soonCount")
-    .textContent =
-      soon;
+  }
 
-  document
-    .getElementById("lowCount")
-    .textContent =
-      low;
+
+  saveData();
+
+  renderAll();
+
+  renderPeopleList();
 
 }
 
 
-// ============================
-// Excel 导出
-// ============================
+/* =========================================================
+   33. Excel 导出
+   ========================================================= */
 
 function exportExcel() {
 
   if (
-    typeof XLSX === "undefined"
+    typeof XLSX ===
+    "undefined"
   ) {
 
-    alert("Excel功能加载失败，请检查网络连接。");
+    alert(
+      "Excel 功能需要网络连接，请稍后再试。"
+    );
 
     return;
 
@@ -1270,7 +2573,20 @@ function exportExcel() {
 
 
   const items =
-    state.items.map(item => ({
+    getCurrentItems();
+
+
+  if (items.length === 0) {
+
+    alert("当前没有可以导出的物品。");
+
+    return;
+
+  }
+
+
+  const rows =
+    items.map(item => ({
 
       管理对象:
         item.person,
@@ -1281,23 +2597,14 @@ function exportExcel() {
       品牌:
         item.brand,
 
-      分类:
-        item.category,
-
       规格:
         item.spec,
 
+      分类:
+        item.category,
+
       单位:
         item.unit,
-
-      总价格:
-        item.price,
-
-      购买数量:
-        item.purchaseQuantity,
-
-      均价:
-        item.averagePrice,
 
       当前余量:
         item.quantity,
@@ -1311,22 +2618,33 @@ function exportExcel() {
       存放位置:
         item.location,
 
-      备注:
-        item.notes,
+      购买日期:
+        item.purchaseDate,
 
-      添加时间:
-        item.addedAt
-          ? new Date(item.addedAt).toLocaleString()
-          : ""
+      总价格:
+        item.price,
+
+      购买数量:
+        item.purchaseQuantity,
+
+      均价:
+        item.averagePrice,
+
+      备注:
+        item.notes
 
     }));
 
 
   const worksheet =
-    XLSX.utils.json_to_sheet(items);
+    XLSX.utils.json_to_sheet(
+      rows
+    );
+
 
   const workbook =
     XLSX.utils.book_new();
+
 
   XLSX.utils.book_append_sheet(
     workbook,
@@ -1335,31 +2653,41 @@ function exportExcel() {
   );
 
 
+  const date =
+    new Date()
+      .toISOString()
+      .slice(0, 10);
+
+
   XLSX.writeFile(
     workbook,
-    "物品管理.xlsx"
+    `物品管理_${state.currentPerson}_${date}.xlsx`
   );
 
 }
 
 
-// ============================
-// Excel 导入
-// ============================
+/* =========================================================
+   34. Excel 导入
+   ========================================================= */
 
-function importExcel(event) {
+function importExcel(file) {
 
-  const file =
-    event.target.files[0];
-
-  if (!file) return;
+  if (
+    !file
+  ) {
+    return;
+  }
 
 
   if (
-    typeof XLSX === "undefined"
+    typeof XLSX ===
+    "undefined"
   ) {
 
-    alert("Excel功能加载失败，请检查网络连接。");
+    alert(
+      "Excel 功能需要网络连接，请稍后再试。"
+    );
 
     return;
 
@@ -1370,184 +2698,368 @@ function importExcel(event) {
     new FileReader();
 
 
-  reader.onload = function(e) {
+  reader.onload =
+    event => {
 
-    try {
+      try {
 
-      const workbook =
-        XLSX.read(
-          e.target.result,
-          {
-            type: "array"
+        const data =
+          new Uint8Array(
+            event.target.result
+          );
+
+
+        const workbook =
+          XLSX.read(
+            data,
+            {
+              type: "array"
+            }
+          );
+
+
+        const sheet =
+          workbook.Sheets[
+            workbook.SheetNames[0]
+          ];
+
+
+        const rows =
+          XLSX.utils.sheet_to_json(
+            sheet,
+            {
+              defval: ""
+            }
+          );
+
+
+        if (
+          !rows.length
+        ) {
+
+          alert(
+            "Excel 中没有找到数据。"
+          );
+
+          return;
+
+        }
+
+
+        let imported =
+          0;
+
+
+        rows.forEach(row => {
+
+          const name =
+            row["物品名称"] ||
+            row["名称"] ||
+            row["物品"] ||
+            "";
+
+
+          if (
+            !String(name).trim()
+          ) {
+
+            return;
+
           }
-        );
 
 
-      const sheet =
-        workbook.Sheets[
-          workbook.SheetNames[0]
-        ];
-
-
-      const rows =
-        XLSX.utils.sheet_to_json(sheet);
-
-
-      rows.forEach(row => {
-
-        const price =
-          Number(row["总价格"] || 0);
-
-        const purchaseQuantity =
-          Number(row["购买数量"] || 0);
-
-
-        const averagePrice =
-          purchaseQuantity > 0
-            ? price / purchaseQuantity
-            : Number(row["均价"] || 0);
-
-
-        state.items.push({
-
-          id:
-            Date.now().toString() +
-            Math.random()
-              .toString(36)
-              .slice(2),
-
-          person:
+          const person =
             row["管理对象"] ||
-            state.currentPerson,
+            state.currentPerson;
 
-          name:
-            row["物品名称"] || "",
 
-          brand:
-            row["品牌"] || "",
-
-          category:
-            row["分类"] || "",
-
-          spec:
-            row["规格"] || "",
-
-          unit:
-            row["单位"] || "个",
-
-          price:
-            price,
-
-          purchaseQuantity:
-            purchaseQuantity,
-
-          averagePrice:
-            averagePrice,
-
-          quantity:
+          const price =
             Number(
-              row["当前余量"] || 0
-            ),
+              row["总价格"] ||
+              row["价格"] ||
+              0
+            ) || 0;
 
-          minimum:
+
+          const purchaseQuantity =
             Number(
-              row["最低余量"] || 0
-            ),
+              row["购买数量"] ||
+              row["购买份数"] ||
+              0
+            ) || 0;
 
-          expiry:
-            formatExcelDate(
-              row["到期日"]
-            ),
 
-          location:
-            row["存放位置"] || "",
+          let averagePrice =
+            Number(
+              row["均价"] ||
+              0
+            ) || 0;
 
-          notes:
-            row["备注"] || "",
 
-          addedAt:
-            Date.now()
+          if (
+            price > 0 &&
+            purchaseQuantity > 0
+          ) {
+
+            averagePrice =
+              price /
+              purchaseQuantity;
+
+          }
+
+
+          state.items.push({
+
+            id:
+              generateId(),
+
+            person:
+              String(person),
+
+            name:
+              String(name),
+
+            brand:
+              String(
+                row["品牌"] || ""
+              ),
+
+            spec:
+              String(
+                row["规格"] || ""
+              ),
+
+            category:
+              String(
+                row["分类"] || "其他"
+              ),
+
+            unit:
+              String(
+                row["单位"] || "个"
+              ),
+
+            quantity:
+              Number(
+                row["当前余量"] ||
+                row["余量"] ||
+                0
+              ) || 0,
+
+            minimum:
+              Number(
+                row["最低余量"] ||
+                0
+              ) || 0,
+
+            expiry:
+              normalizeExcelDate(
+                row["到期日"]
+              ),
+
+            location:
+              String(
+                row["存放位置"] || ""
+              ),
+
+            purchaseDate:
+              normalizeExcelDate(
+                row["购买日期"]
+              ),
+
+            price:
+              price,
+
+            purchaseQuantity:
+              purchaseQuantity,
+
+            averagePrice:
+              averagePrice,
+
+            notes:
+              String(
+                row["备注"] || ""
+              ),
+
+            createdAt:
+              Date.now() + imported
+
+          });
+
+
+          /* 如果 Excel 中出现新管理对象 */
+
+          if (
+            person &&
+            !state.people.includes(
+              String(person)
+            )
+          ) {
+
+            state.people.push(
+              String(person)
+            );
+
+          }
+
+
+          imported++;
 
         });
 
-      });
+
+        saveData();
+
+        renderAll();
 
 
-      saveData();
-
-      renderCategoryFilter();
-      renderItems();
-      updateDashboard();
+        alert(
+          `成功导入 ${imported} 条物品。`
+        );
 
 
-      alert(
-        `成功导入 ${rows.length} 条物品`
-      );
+      } catch (error) {
+
+        console.error(
+          "Excel 导入失败：",
+          error
+        );
+
+        alert(
+          "Excel 导入失败，请检查文件格式。"
+        );
+
+      }
+
+    };
 
 
-    } catch (error) {
-
-      console.error(error);
-
-      alert(
-        "Excel导入失败，请检查文件格式。"
-      );
-
-    }
-
-  };
-
-
-  reader.readAsArrayBuffer(file);
-
-  event.target.value = "";
+  reader.readAsArrayBuffer(
+    file
+  );
 
 }
 
 
-// ============================
-// Excel日期转换
-// ============================
+/* =========================================================
+   35. Excel 日期处理
+   ========================================================= */
 
-function formatExcelDate(value) {
+function normalizeExcelDate(value) {
 
-  if (!value) return "";
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+
+    return "";
+
+  }
+
+
+  /* 已经是标准日期 */
 
   if (
     typeof value === "string"
   ) {
 
-    return value;
+    const text =
+      value.trim();
 
-  }
+
+    if (
+      /^\d{4}-\d{1,2}-\d{1,2}$/.test(
+        text
+      )
+    ) {
+
+      const parts =
+        text.split("-");
 
 
-  if (typeof value === "number") {
+      return [
+        parts[0],
+        String(parts[1]).padStart(2, "0"),
+        String(parts[2]).padStart(2, "0")
+      ].join("-");
+
+    }
+
 
     const date =
-      new Date(
-        Math.round(
-          (value - 25569) *
-          86400 *
-          1000
-        )
-      );
+      new Date(text);
 
-    return date
-      .toISOString()
-      .split("T")[0];
+
+    if (
+      !isNaN(
+        date.getTime()
+      )
+    ) {
+
+      return formatDate(date);
+
+    }
 
   }
 
 
-  return "";
+  /* Excel serial number */
+
+  if (
+    typeof value === "number"
+  ) {
+
+    const date =
+      XLSX.SSF.parse_date_code(
+        value
+      );
+
+
+    if (date) {
+
+      return [
+        date.y,
+        String(date.m).padStart(2, "0"),
+        String(date.d).padStart(2, "0")
+      ].join("-");
+
+    }
+
+  }
+
+
+  return String(value);
 
 }
 
 
-// ============================
-// JSON备份
-// ============================
+/* =========================================================
+   36. 日期格式
+   ========================================================= */
+
+function formatDate(date) {
+
+  return [
+
+    date.getFullYear(),
+
+    String(
+      date.getMonth() + 1
+    ).padStart(2, "0"),
+
+    String(
+      date.getDate()
+    ).padStart(2, "0")
+
+  ].join("-");
+
+}
+
+
+/* =========================================================
+   37. JSON 备份
+   ========================================================= */
 
 function exportJSON() {
 
@@ -1563,135 +3075,316 @@ function exportJSON() {
     new Blob(
       [data],
       {
-        type: "application/json"
+        type:
+          "application/json"
       }
     );
 
 
   const url =
-    URL.createObjectURL(blob);
+    URL.createObjectURL(
+      blob
+    );
 
 
   const a =
-    document.createElement("a");
+    document.createElement(
+      "a"
+    );
 
-  a.href = url;
+
+  const date =
+    new Date()
+      .toISOString()
+      .slice(0, 10);
+
+
+  a.href =
+    url;
 
   a.download =
-    "物品管理备份.json";
+    `物品管理备份_${date}.json`;
+
+
+  document.body.appendChild(
+    a
+  );
 
   a.click();
 
+  a.remove();
 
-  URL.revokeObjectURL(url);
+
+  URL.revokeObjectURL(
+    url
+  );
 
 }
 
 
-// ============================
-// JSON恢复
-// ============================
+/* =========================================================
+   38. JSON 恢复
+   ========================================================= */
 
-function importJSON(event) {
+function importJSON(file) {
 
-  const file =
-    event.target.files[0];
-
-  if (!file) return;
+  if (!file) {
+    return;
+  }
 
 
   const reader =
     new FileReader();
 
 
-  reader.onload = function(e) {
+  reader.onload =
+    event => {
 
-    try {
+      try {
 
-      const data =
-        JSON.parse(
-          e.target.result
+        const data =
+          JSON.parse(
+            event.target.result
+          );
+
+
+        if (
+          !data ||
+          !Array.isArray(
+            data.items
+          )
+        ) {
+
+          throw new Error(
+            "JSON 格式不正确"
+          );
+
+        }
+
+
+        const confirmed =
+          confirm(
+            "恢复备份会覆盖当前数据，确定继续吗？"
+          );
+
+
+        if (!confirmed) {
+          return;
+        }
+
+
+        state = {
+
+          people:
+            Array.isArray(data.people) &&
+            data.people.length
+              ? data.people
+              : ["我"],
+
+          currentPerson:
+            data.currentPerson ||
+            (
+              Array.isArray(data.people) &&
+              data.people.length
+                ? data.people[0]
+                : "我"
+            ),
+
+          items:
+            data.items
+
+        };
+
+
+        normalizeData();
+
+        saveData();
+
+        renderAll();
+
+
+        alert(
+          "备份恢复成功。"
         );
 
 
-      if (
-        !data.people ||
-        !data.items
-      ) {
+      } catch (error) {
 
-        throw new Error(
-          "格式错误"
+        console.error(
+          "JSON 恢复失败：",
+          error
+        );
+
+        alert(
+          "备份文件格式不正确。"
         );
 
       }
 
-
-      if (
-        !confirm(
-          "恢复备份会覆盖当前数据，确定继续吗？"
-        )
-      ) {
-
-        return;
-
-      }
+    };
 
 
-      state = data;
+  reader.readAsText(
+    file,
+    "utf-8"
+  );
 
-      saveData();
-
-      renderPeopleSelect();
-      renderCategoryFilter();
-      renderItems();
-      updateDashboard();
+}
 
 
-      alert("恢复成功");
+/* =========================================================
+   39. 文件选择
+   ========================================================= */
+
+function handleExcelInput(event) {
+
+  const file =
+    event.target.files[0];
+
+  if (file) {
+
+    importExcel(file);
+
+  }
 
 
-    } catch (error) {
+  event.target.value =
+    "";
 
-      alert(
-        "JSON备份文件无效。"
+}
+
+
+function handleJSONInput(event) {
+
+  const file =
+    event.target.files[0];
+
+  if (file) {
+
+    importJSON(file);
+
+  }
+
+
+  event.target.value =
+    "";
+
+}
+
+
+/* =========================================================
+   40. 总渲染
+   ========================================================= */
+
+function renderAll() {
+
+  renderPeople();
+
+  renderCategoryFilter();
+
+  renderDashboard();
+
+  renderItems();
+
+}
+
+
+/* =========================================================
+   41. 兼容旧版按钮
+   ========================================================= */
+
+window.openItemModal =
+  openItemModal;
+
+window.closeItemModal =
+  closeItemModal;
+
+window.saveItem =
+  saveItem;
+
+window.deleteItem =
+  deleteItem;
+
+window.changeQuantity =
+  changeQuantity;
+
+window.openPeopleModal =
+  openPeopleModal;
+
+window.closePeopleModal =
+  closePeopleModal;
+
+window.addPerson =
+  addPerson;
+
+window.deletePerson =
+  deletePerson;
+
+window.exportExcel =
+  exportExcel;
+
+window.exportJSON =
+  exportJSON;
+
+window.importExcel =
+  importExcel;
+
+window.importJSON =
+  importJSON;
+
+window.handleExcelInput =
+  handleExcelInput;
+
+window.handleJSONInput =
+  handleJSONInput;
+
+window.renderAll =
+  renderAll;
+
+
+/* =========================================================
+   42. 兼容 HTML 中的 onchange
+   ========================================================= */
+
+window.updateAveragePreview =
+  updateAveragePreview;
+
+
+/* =========================================================
+   43. 自动监听 Excel / JSON input
+   ========================================================= */
+
+document.addEventListener(
+  "change",
+  event => {
+
+    if (
+      event.target.id ===
+      "excelInput"
+    ) {
+
+      handleExcelInput(
+        event
       );
 
     }
 
-  };
 
+    if (
+      event.target.id ===
+      "jsonInput"
+    ) {
 
-  reader.readAsText(file);
+      handleJSONInput(
+        event
+      );
 
-  event.target.value = "";
+    }
 
-}
-
-
-// ============================
-// HTML安全处理
-// ============================
-
-function escapeHTML(value) {
-
-  if (value === undefined || value === null) {
-    return "";
   }
-
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-
-}
+);
 
 
-function escapeJS(value) {
-
-  return String(value)
-    .replaceAll("\\", "\\\\")
-    .replaceAll("'", "\\'");
-
-}
+/* =========================================================
+   完成
+   ========================================================= */
