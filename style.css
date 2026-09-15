@@ -3,22 +3,17 @@
 }
 
 body {
-
   margin: 0;
-
-  background: #f4f6fa;
-
-  color: #172033;
-
+  background: #f5f6f8;
+  color: #222;
   font-family:
     -apple-system,
     BlinkMacSystemFont,
-    "Segoe UI",
-    "PingFang SC",
-    "Microsoft YaHei",
+    "SF Pro Display",
+    "Helvetica Neue",
+    Arial,
     sans-serif;
 }
-
 
 button,
 input,
@@ -27,1073 +22,600 @@ textarea {
   font: inherit;
 }
 
-
 button {
   cursor: pointer;
 }
 
-
-/* =========================
-   APP
-========================= */
-
 .app {
-
-  width: 100%;
-
-  max-width: 1100px;
-
+  max-width: 900px;
   margin: auto;
-
-  padding:
-    20px
-    20px
-    50px;
-
+  padding: 20px 16px 100px;
 }
 
 
-/* =========================
-   HEADER
-========================= */
+/* ====================
+   顶部
+==================== */
 
-.header {
-
+.topbar {
   display: flex;
-
-  align-items: center;
-
   justify-content: space-between;
-
-  gap: 15px;
-
-  margin-bottom: 15px;
-
+  align-items: center;
+  margin-bottom: 20px;
 }
 
-
-.header h1 {
-
-  margin: 0;
-
+.app-title {
   font-size: 28px;
+  font-weight: 800;
+}
 
+.app-subtitle {
+  color: #888;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.person-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: white;
+  font-size: 21px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.08);
 }
 
 
-.header p {
+/* ====================
+   管理对象
+==================== */
 
-  margin:
-    5px
-    0
-    0;
+.person-selector {
+  background: white;
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-bottom: 15px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.04);
+}
 
-  color: #6b7280;
+.person-selector label {
+  display: block;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 5px;
+}
 
-  font-size: 14px;
-
+.person-selector select {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 17px;
+  font-weight: 700;
+  outline: none;
 }
 
 
-/* =========================
-   BUTTON
-========================= */
+/* ====================
+   仪表盘
+==================== */
 
-.primary-btn {
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.04);
+}
+
+.stat-icon {
+  font-size: 21px;
+}
+
+.stat-number {
+  font-size: 21px;
+  font-weight: 800;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.stat-card.danger {
+  background: #fff4f4;
+}
+
+.stat-card.warning {
+  background: #fff9ed;
+}
+
+.stat-card.low {
+  background: #fff5f0;
+}
+
+
+/* ====================
+   搜索
+==================== */
+
+.search-box {
+  background: white;
+  border-radius: 15px;
+  padding: 12px 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.04);
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 15px;
+  background: transparent;
+}
+
+
+/* ====================
+   筛选
+==================== */
+
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.filters select {
+  border: none;
+  background: white;
+  padding: 11px 9px;
+  border-radius: 12px;
+  outline: none;
+  font-size: 13px;
+}
+
+
+/* ====================
+   物品卡片
+==================== */
+
+.item-card {
+  background: white;
+  border-radius: 18px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 3px 14px rgba(0,0,0,.05);
+}
+
+.item-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.item-name {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.item-meta {
+  color: #888;
+  font-size: 12px;
+  margin-top: 5px;
+  line-height: 1.6;
+}
+
+.status-badge {
+  white-space: nowrap;
+  height: fit-content;
+  padding: 5px 9px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #edf7ee;
+}
+
+.status-badge.expired {
+  background: #ffe9e9;
+}
+
+.status-badge.soon {
+  background: #fff2d6;
+}
+
+.status-badge.low {
+  background: #ffe8dc;
+}
+
+.status-badge.empty {
+  background: #eee;
+}
+
+
+/* ====================
+   数量区域
+==================== */
+
+.item-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.info-box {
+  background: #f7f7f8;
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.info-title {
+  font-size: 11px;
+  color: #888;
+}
+
+.info-value {
+  margin-top: 3px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+
+/* ====================
+   均价
+==================== */
+
+.average-price {
+  color: #333;
+}
+
+.average-price small {
+  display: block;
+  color: #999;
+  font-size: 10px;
+  font-weight: normal;
+  margin-top: 2px;
+}
+
+
+/* ====================
+   快速数量按钮
+==================== */
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.quantity-control button {
+  width: 38px;
+  height: 36px;
+  border: none;
+  border-radius: 10px;
+  background: #f0f1f3;
+  font-size: 20px;
+}
+
+.quantity-number {
+  min-width: 65px;
+  text-align: center;
+  font-weight: 800;
+}
+
+
+/* ====================
+   卡片操作
+==================== */
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.item-actions button {
+  flex: 1;
+  border: none;
+  border-radius: 10px;
+  padding: 9px;
+  background: #f2f2f4;
+  font-size: 13px;
+}
+
+.item-actions .delete {
+  color: #d33;
+}
+
+
+/* ====================
+   添加按钮
+==================== */
+
+.add-button {
+  position: fixed;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
 
   border: none;
+  border-radius: 30px;
+  padding: 15px 25px;
 
-  background: #2563eb;
-
+  background: #111;
   color: white;
 
-  padding:
-    11px
-    17px;
+  font-size: 15px;
+  font-weight: 700;
 
-  border-radius: 11px;
+  box-shadow: 0 8px 25px rgba(0,0,0,.22);
 
-  font-weight: 600;
-
+  z-index: 20;
 }
 
 
-.primary-btn:active {
+/* ====================
+   数据工具
+==================== */
 
-  transform: scale(.97);
-
-}
-
-
-.secondary-btn {
-
-  border: 1px solid #d9dee8;
-
-  background: white;
-
-  padding:
-    10px
-    15px;
-
-  border-radius: 10px;
-
-}
-
-
-.icon-text-btn {
-
-  border: 1px solid #d9dee8;
-
-  background: white;
-
-  border-radius: 10px;
-
-  width: 45px;
-
-  height: 43px;
-
-}
-
-
-/* =========================
-   PERSON
-========================= */
-
-.person-bar {
-
-  display: flex;
-
+.data-tools {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
+  margin-top: 20px;
+}
 
-  margin-bottom: 16px;
-
+.data-tools button {
+  border: none;
+  background: white;
+  border-radius: 12px;
+  padding: 10px 5px;
+  font-size: 11px;
 }
 
 
-.person-bar select {
+/* ====================
+   弹窗
+==================== */
 
-  flex: 1;
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.4);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal.show {
+  display: flex;
+}
+
+.modal-content {
+  background: white;
+  width: 100%;
+  max-width: 650px;
+  max-height: 92vh;
+  overflow-y: auto;
+
+  border-radius: 24px 24px 0 0;
+
+  padding: 20px 18px 35px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.modal-header button {
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-radius: 50%;
+  background: #f1f1f1;
+  font-size: 23px;
+}
+
+
+/* ====================
+   表单
+==================== */
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 13px;
+}
+
+label input,
+label select,
+label textarea {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+
+  border: 1px solid #e3e3e5;
+  border-radius: 11px;
 
   padding: 11px;
 
-  border:
-    1px solid
-    #d9dee8;
-
-  border-radius: 10px;
-
-  background: white;
-
-}
-
-
-/* =========================
-   DASHBOARD
-========================= */
-
-.dashboard {
-
-  display: grid;
-
-  grid-template-columns:
-    repeat(4, 1fr);
-
-  gap: 10px;
-
-  margin-bottom: 15px;
-
-}
-
-
-.stat-card {
-
-  background: white;
-
-  border:
-    1px solid
-    #e5e9f0;
-
-  border-radius: 15px;
-
-  padding: 15px;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 12px;
-
-}
-
-
-.stat-icon {
-
-  font-size: 25px;
-
-}
-
-
-.stat-number {
-
-  font-size: 25px;
-
-  font-weight: 700;
-
-}
-
-
-.stat-label {
-
-  color: #6b7280;
-
-  font-size: 12px;
-
-}
-
-
-.stat-card.danger {
-
-  border-left:
-    4px solid
-    #ef4444;
-
-}
-
-
-.stat-card.warning {
-
-  border-left:
-    4px solid
-    #f59e0b;
-
-}
-
-
-/* =========================
-   SEARCH
-========================= */
-
-.search-box {
-
-  margin-bottom: 10px;
-
-}
-
-
-.search-input-wrap {
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 8px;
-
-  background: white;
-
-  border:
-    1px solid
-    #d9dee8;
-
-  border-radius: 12px;
-
-  padding:
-    0
-    13px;
-
-}
-
-
-.search-input-wrap input {
-
-  border: none;
-
   outline: none;
-
-  flex: 1;
-
-  padding:
-    13px
-    0;
-
-  background: transparent;
-
+  background: #fafafa;
 }
 
+label input:focus,
+label select:focus,
+label textarea:focus {
+  border-color: #999;
+  background: white;
+}
 
-/* =========================
-   FILTER
-========================= */
-
-.filters {
-
+.form-row {
   display: grid;
-
-  grid-template-columns:
-    1fr
-    1fr
-    1fr;
-
-  gap: 9px;
-
-  margin-bottom: 12px;
-
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
 
-.filters select {
+/* ====================
+   价格
+==================== */
 
-  width: 100%;
-
-  padding: 10px;
-
-  border:
-    1px solid
-    #d9dee8;
-
-  border-radius: 10px;
-
-  background: white;
-
-}
-
-
-/* =========================
-   QUICK ACTIONS
-========================= */
-
-.quick-actions {
-
-  display: flex;
-
-  gap: 8px;
-
-  margin-bottom: 18px;
-
-}
-
-
-.quick-actions button,
-.quick-actions label {
-
-  border:
-    1px solid
-    #d9dee8;
-
-  background: white;
-
-  border-radius: 9px;
-
-  padding:
-    8px
-    12px;
-
-  font-size: 13px;
-
-}
-
-
-.quick-actions input {
-
-  display: none;
-
-}
-
-
-/* =========================
-   ITEMS
-========================= */
-
-.items-list {
-
-  display: grid;
-
-  grid-template-columns:
-    repeat(2, 1fr);
-
-  gap: 12px;
-
-}
-
-
-.item-card {
-
-  background: white;
-
-  border:
-    1px solid
-    #e4e8ef;
-
+.price-section {
+  background: #faf8f3;
   border-radius: 16px;
-
-  padding: 16px;
-
+  padding: 13px;
+  margin: 8px 0 14px;
 }
 
+.section-title {
+  font-weight: 800;
+  margin-bottom: 12px;
+}
 
-.item-header {
-
+.average-price-box {
   display: flex;
-
+  align-items: center;
   justify-content: space-between;
 
-  gap: 10px;
-
-}
-
-
-.item-name {
-
-  font-size: 18px;
-
-  font-weight: 700;
-
-}
-
-
-.item-subtitle {
-
-  color: #6b7280;
-
-  font-size: 12px;
-
-  margin-top: 4px;
-
-}
-
-
-.badges {
-
-  display: flex;
-
-  flex-wrap: wrap;
-
-  gap: 6px;
-
-  margin:
-    12px
-    0;
-
-}
-
-
-.badge {
-
-  padding:
-    5px
-    8px;
-
-  border-radius: 999px;
-
-  background: #eef2f7;
-
-  font-size: 11px;
-
-}
-
-
-.badge.red {
-
-  background: #fee2e2;
-
-  color: #b91c1c;
-
-}
-
-
-.badge.orange {
-
-  background: #ffedd5;
-
-  color: #c2410c;
-
-}
-
-
-.badge.green {
-
-  background: #dcfce7;
-
-  color: #15803d;
-
-}
-
-
-.badge.blue {
-
-  background: #dbeafe;
-
-  color: #1d4ed8;
-
-}
-
-
-/* =========================
-   QUANTITY
-========================= */
-
-.quantity-box {
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  background: #f8fafc;
-
-  border-radius: 11px;
-
-  padding: 10px;
-
-  margin-bottom: 10px;
-
-}
-
-
-.quantity-number {
-
-  font-size: 21px;
-
-  font-weight: 700;
-
-}
-
-
-.quantity-controls {
-
-  display: flex;
-
-  gap: 5px;
-
-}
-
-
-.quantity-controls button {
-
-  width: 35px;
-
-  height: 35px;
-
-  border:
-    1px solid
-    #d9dee8;
-
   background: white;
-
-  border-radius: 8px;
-
-  font-size: 18px;
-
+  border-radius: 12px;
+  padding: 12px;
+  margin-top: 3px;
 }
 
-
-.item-details {
-
-  display: grid;
-
-  grid-template-columns:
-    1fr
-    1fr;
-
-  gap: 7px;
-
-}
-
-
-.detail {
-
-  background: #f8fafc;
-
-  border-radius: 8px;
-
-  padding: 8px;
-
-  font-size: 12px;
-
-}
-
-
-.detail-label {
-
-  color: #6b7280;
-
-  font-size: 10px;
-
-  margin-bottom: 3px;
-
-}
-
-
-.item-notes {
-
-  margin-top: 9px;
-
-  font-size: 12px;
-
-  color: #6b7280;
-
-}
-
-
-.item-actions {
-
-  display: flex;
-
-  justify-content: flex-end;
-
-  gap: 7px;
-
-  margin-top: 12px;
-
-}
-
-
-.item-actions button {
-
-  border:
-    1px solid
-    #d9dee8;
-
-  background: white;
-
-  border-radius: 8px;
-
-  padding:
-    7px
-    10px;
-
-  font-size: 12px;
-
-}
-
-
-/* =========================
-   EMPTY
-========================= */
-
-.empty-state {
-
-  text-align: center;
-
-  padding:
-    70px
-    20px;
-
-  color: #6b7280;
-
-}
-
-
-.empty-icon {
-
-  font-size: 48px;
-
-}
-
-
-.hidden {
-
-  display: none !important;
-
-}
-
-
-/* =========================
-   MODAL
-========================= */
-
-.modal {
-
-  position: fixed;
-
-  inset: 0;
-
-  z-index: 100;
-
-  background:
-    rgba(
-      15,
-      23,
-      42,
-      .5
-    );
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  padding: 15px;
-
-}
-
-
-.modal-content {
-
-  background: white;
-
-  width:
-    min(
-      720px,
-      100%
-    );
-
-  max-height: 92vh;
-
-  overflow-y: auto;
-
-  border-radius: 18px;
-
-  padding: 20px;
-
-}
-
-
-.small-modal {
-
-  width:
-    min(
-      520px,
-      100%
-    );
-
-}
-
-
-.modal-header {
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  margin-bottom: 18px;
-
-}
-
-
-.modal-header h2 {
-
-  margin: 0;
-
-}
-
-
-.close-btn {
-
-  border: none;
-
-  background: none;
-
-  font-size: 30px;
-
-  color: #64748b;
-
-}
-
-
-.modal-content label {
-
+.average-price-box span {
   display: block;
-
   font-size: 13px;
-
-  font-weight: 600;
-
-  margin-bottom: 13px;
-
+  font-weight: 700;
 }
 
-
-.modal-content input,
-.modal-content select,
-.modal-content textarea {
-
+.average-price-box small {
   display: block;
+  color: #999;
+  font-size: 10px;
+  margin-top: 3px;
+}
 
+.average-price-box strong {
+  font-size: 17px;
+}
+
+
+/* ====================
+   保存按钮
+==================== */
+
+.submit-button {
   width: 100%;
-
-  margin-top: 6px;
-
-  padding: 10px;
-
-  border:
-    1px solid
-    #d9dee8;
-
-  border-radius: 9px;
-
-  background: white;
-
-  outline: none;
-
+  border: none;
+  background: #111;
+  color: white;
+  padding: 14px;
+  border-radius: 13px;
+  font-weight: 700;
+  margin-top: 5px;
 }
 
 
-.modal-content textarea {
+/* ====================
+   管理对象
+==================== */
 
-  resize: vertical;
-
-}
-
-
-.two-columns {
-
-  display: grid;
-
-  grid-template-columns:
-    1fr
-    1fr;
-
-  gap: 12px;
-
-}
-
-
-.three-columns {
-
-  display: grid;
-
-  grid-template-columns:
-    1fr
-    1fr
-    1fr;
-
-  gap: 12px;
-
-}
-
-
-.modal-actions {
-
+.person-item {
   display: flex;
-
-  justify-content: flex-end;
-
-  gap: 8px;
-
-  margin-top: 20px;
-
-}
-
-
-/* =========================
-   PEOPLE
-========================= */
-
-.person-row {
-
-  display: flex;
-
-  align-items: center;
-
   justify-content: space-between;
-
-  padding:
-    12px
-    0;
-
-  border-bottom:
-    1px solid
-    #edf0f5;
-
+  align-items: center;
+  padding: 13px;
+  border-bottom: 1px solid #eee;
 }
 
-
-.person-name {
-
-  font-weight: 600;
-
-}
-
-
-.person-delete {
-
-  border:
-    1px solid
-    #fecaca;
-
-  background: #fff;
-
-  color: #dc2626;
-
-  padding:
-    6px
-    9px;
-
+.person-item button {
+  border: none;
+  background: #ffecec;
+  color: #d33;
   border-radius: 8px;
-
+  padding: 7px 10px;
 }
-
 
 .add-person {
-
   display: flex;
-
   gap: 8px;
-
   margin-top: 15px;
-
 }
-
 
 .add-person input {
-
   flex: 1;
-
-}
-
-
-.small-text {
-
-  color: #6b7280;
-
-  font-size: 12px;
-
-}
-
-
-/* =========================
-   TOAST
-========================= */
-
-.toast {
-
-  position: fixed;
-
-  bottom: 25px;
-
-  left: 50%;
-
-  transform:
-    translate(-50%, 20px);
-
-  background: #172033;
-
-  color: white;
-
-  padding:
-    10px
-    16px;
-
+  border: 1px solid #ddd;
   border-radius: 10px;
+  padding: 10px;
+}
 
-  opacity: 0;
-
-  pointer-events: none;
-
-  transition: .2s;
-
-  z-index: 200;
-
+.add-person button {
+  border: none;
+  border-radius: 10px;
+  background: #111;
+  color: white;
+  padding: 0 14px;
 }
 
 
-.toast.show {
+/* ====================
+   手机适配
+==================== */
 
-  opacity: 1;
-
-  transform:
-    translate(-50%, 0);
-
-}
-
-
-/* =========================
-   MOBILE
-========================= */
-
-@media(max-width: 750px) {
+@media (max-width: 600px) {
 
   .app {
-
-    padding:
-      13px
-      13px
-      40px;
-
+    padding: 16px 12px 100px;
   }
-
-
-  .header h1 {
-
-    font-size: 23px;
-
-  }
-
-
-  .header p {
-
-    font-size: 12px;
-
-  }
-
 
   .dashboard {
-
-    grid-template-columns:
-      1fr
-      1fr;
-
+    grid-template-columns: 1fr 1fr;
   }
-
-
-  .stat-card:first-child {
-
-    grid-column:
-      1 / -1;
-
-  }
-
-
-  .items-list {
-
-    grid-template-columns:
-      1fr;
-
-  }
-
 
   .filters {
-
-    grid-template-columns:
-      1fr
-      1fr;
-
+    grid-template-columns: 1fr 1fr;
   }
-
 
   .filters select:last-child {
-
-    grid-column:
-      1 / -1;
-
+    grid-column: span 2;
   }
 
-
-  .two-columns,
-  .three-columns {
-
-    grid-template-columns:
-      1fr;
-
+  .data-tools {
+    grid-template-columns: 1fr 1fr;
   }
 
-
-  .quick-actions {
-
-    overflow-x: auto;
-
+  .form-row {
+    grid-template-columns: 1fr 1fr;
   }
 
-
-  .quick-actions button,
-  .quick-actions label {
-
-    white-space: nowrap;
-
+  .item-info-grid {
+    grid-template-columns: 1fr 1fr;
   }
-
 }
