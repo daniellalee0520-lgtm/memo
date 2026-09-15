@@ -1,521 +1,390 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#2563eb">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
   <title>我的物品管理</title>
 
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
 
-  <!-- Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
 
-<div class="app">
+  <div class="app">
 
-  <!-- 顶部 -->
-  <header class="header">
-
-    <div>
-      <div class="title-row">
-        <h1>📦 我的物品</h1>
-      </div>
-
-      <p id="currentPersonText">管理：我自己</p>
-    </div>
-
-    <button id="addBtn" class="primary-btn">
-      ＋ 添加
-    </button>
-
-  </header>
-
-
-  <!-- 管理对象 -->
-  <section class="person-bar">
-
-    <select id="personSelect"></select>
-
-    <button id="managePeopleBtn" class="icon-text-btn">
-      👥
-    </button>
-
-  </section>
-
-
-  <!-- 仪表盘 -->
-
-  <section class="dashboard">
-
-    <div class="stat-card">
-      <div class="stat-icon">📦</div>
+    <!-- 顶部 -->
+    <header class="topbar">
       <div>
-        <div id="totalCount" class="stat-number">0</div>
-        <div class="stat-label">物品</div>
+        <div class="app-title">我的物品</div>
+        <div class="app-subtitle">Inventory Manager</div>
       </div>
-    </div>
 
-    <div class="stat-card danger">
-      <div class="stat-icon">🔴</div>
-      <div>
-        <div id="expiredCount" class="stat-number">0</div>
-        <div class="stat-label">已过期</div>
+      <button class="person-btn" onclick="openPeopleModal()">
+        👤
+      </button>
+    </header>
+
+
+    <!-- 管理对象 -->
+    <section class="person-selector">
+      <label>当前管理对象</label>
+
+      <select id="personSelect" onchange="changePerson()"></select>
+    </section>
+
+
+    <!-- 仪表盘 -->
+    <section class="dashboard">
+
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div>
+          <div class="stat-number" id="totalCount">0</div>
+          <div class="stat-label">物品</div>
+        </div>
       </div>
-    </div>
 
-    <div class="stat-card warning">
-      <div class="stat-icon">🟠</div>
-      <div>
-        <div id="soonCount" class="stat-number">0</div>
-        <div class="stat-label">即将到期</div>
+      <div class="stat-card danger">
+        <div class="stat-icon">⏰</div>
+        <div>
+          <div class="stat-number" id="expiredCount">0</div>
+          <div class="stat-label">已过期</div>
+        </div>
       </div>
-    </div>
 
-    <div class="stat-card warning">
-      <div class="stat-icon">⚠️</div>
-      <div>
-        <div id="lowCount" class="stat-number">0</div>
-        <div class="stat-label">余量告急</div>
+      <div class="stat-card warning">
+        <div class="stat-icon">📅</div>
+        <div>
+          <div class="stat-number" id="soonCount">0</div>
+          <div class="stat-label">30天内到期</div>
+        </div>
       </div>
-    </div>
 
-  </section>
+      <div class="stat-card low">
+        <div class="stat-icon">⚠️</div>
+        <div>
+          <div class="stat-number" id="lowCount">0</div>
+          <div class="stat-label">余量告急</div>
+        </div>
+      </div>
+
+    </section>
 
 
-  <!-- 搜索 -->
-
-  <section class="search-box">
-
-    <div class="search-input-wrap">
-
-      <span>🔍</span>
-
+    <!-- 搜索 -->
+    <section class="search-box">
+      <span>🔎</span>
       <input
-        id="searchInput"
         type="search"
-        placeholder="搜索物品名称、品牌、备注……"
-      >
-
-    </div>
-
-  </section>
-
-
-  <!-- 筛选 -->
-
-  <section class="filters">
-
-    <select id="categoryFilter">
-
-      <option value="">
-        全部分类
-      </option>
-
-    </select>
+        id="searchInput"
+        placeholder="搜索物品、品牌、规格、位置……"
+        oninput="renderItems()"
+      />
+    </section>
 
 
-    <select id="statusFilter">
+    <!-- 筛选 -->
+    <section class="filters">
 
-      <option value="">
-        全部状态
-      </option>
+      <select id="categoryFilter" onchange="renderItems()">
+        <option value="all">全部分类</option>
+      </select>
 
-      <option value="expired">
-        🔴 已过期
-      </option>
+      <select id="statusFilter" onchange="renderItems()">
+        <option value="all">全部状态</option>
+        <option value="normal">正常</option>
+        <option value="soon">即将到期</option>
+        <option value="expired">已过期</option>
+        <option value="low">余量告急</option>
+        <option value="empty">已用完</option>
+      </select>
 
-      <option value="soon">
-        🟠 30天内到期
-      </option>
+      <select id="sortSelect" onchange="renderItems()">
+        <option value="added-desc">最近添加</option>
+        <option value="name">名称</option>
+        <option value="expiry">到期日</option>
+        <option value="quantity">余量</option>
+        <option value="price">均价</option>
+      </select>
 
-      <option value="low">
-        ⚠️ 余量告急
-      </option>
-
-      <option value="empty">
-        📭 已用完
-      </option>
-
-      <option value="normal">
-        🟢 正常
-      </option>
-
-    </select>
+    </section>
 
 
-    <select id="sortSelect">
-
-      <option value="name">
-        按名称
-      </option>
-
-      <option value="expiry">
-        按到期日
-      </option>
-
-      <option value="quantity">
-        按余量
-      </option>
-
-      <option value="created">
-        按添加时间
-      </option>
-
-    </select>
-
-  </section>
+    <!-- 物品列表 -->
+    <main id="itemList"></main>
 
 
-  <!-- 快捷操作 -->
-
-  <section class="quick-actions">
-
-    <button id="exportBtn">
-      📤 Excel
+    <!-- 底部按钮 -->
+    <button class="add-button" onclick="openItemModal()">
+      ＋ 添加物品
     </button>
 
-    <label>
-      📥 导入
-      <input
-        id="importInput"
-        type="file"
-        accept=".xlsx,.xls,.csv"
-      >
-    </label>
 
-    <button id="backupBtn">
-      💾 备份
-    </button>
+    <!-- 数据管理 -->
+    <section class="data-tools">
 
-    <label>
-      📂 恢复
-      <input
-        id="backupInput"
-        type="file"
-        accept=".json"
-      >
-    </label>
-
-  </section>
-
-
-  <!-- 物品列表 -->
-
-  <main>
-
-    <div id="emptyState" class="empty-state hidden">
-
-      <div class="empty-icon">
-        📭
-      </div>
-
-      <h2>
-        暂时没有物品
-      </h2>
-
-      <p>
-        点击右上角“添加”开始记录。
-      </p>
-
-    </div>
-
-
-    <div id="itemsList" class="items-list"></div>
-
-  </main>
-
-</div>
-
-
-
-<!-- ========================= -->
-<!-- 添加 / 编辑物品 -->
-<!-- ========================= -->
-
-<div id="itemModal" class="modal hidden">
-
-  <div class="modal-content">
-
-    <div class="modal-header">
-
-      <h2 id="modalTitle">
-        添加物品
-      </h2>
-
-      <button
-        class="close-btn"
-        data-close="itemModal"
-      >
-        ×
+      <button onclick="exportExcel()">
+        📊 导出 Excel
       </button>
 
-    </div>
+      <button onclick="document.getElementById('excelInput').click()">
+        📥 导入 Excel
+      </button>
 
+      <button onclick="exportJSON()">
+        💾 JSON备份
+      </button>
 
-    <form id="itemForm">
+      <button onclick="document.getElementById('jsonInput').click()">
+        ♻️ 恢复备份
+      </button>
 
       <input
-        id="itemId"
-        type="hidden"
-      >
+        type="file"
+        id="excelInput"
+        accept=".xlsx,.xls"
+        hidden
+        onchange="importExcel(event)"
+      />
+
+      <input
+        type="file"
+        id="jsonInput"
+        accept=".json"
+        hidden
+        onchange="importJSON(event)"
+      />
+
+    </section>
+
+  </div>
 
 
-      <label>
-        物品名称 *
-        <input
-          id="name"
-          required
-          placeholder="例如：维生素C"
-        >
-      </label>
+  <!-- ==================== 添加/编辑物品 ==================== -->
 
+  <div class="modal" id="itemModal">
 
-      <label>
-        分类
+    <div class="modal-content">
 
-        <input
-          id="category"
-          list="categoryList"
-          placeholder="药品、食品、日用品……"
-        >
-
-        <datalist id="categoryList">
-
-          <option value="药品">
-          <option value="保健品">
-          <option value="食品">
-          <option value="饮料">
-          <option value="化妆品">
-          <option value="日用品">
-          <option value="清洁用品">
-          <option value="电子产品">
-          <option value="其他">
-
-        </datalist>
-
-      </label>
-
-
-      <div class="two-columns">
-
-        <label>
-          品牌
-          <input id="brand">
-        </label>
-
-        <label>
-          规格
-          <input
-            id="spec"
-            placeholder="100片/瓶"
-          >
-        </label>
-
+      <div class="modal-header">
+        <h2 id="modalTitle">添加物品</h2>
+        <button onclick="closeItemModal()">×</button>
       </div>
 
 
-      <div class="three-columns">
+      <form id="itemForm" onsubmit="saveItem(event)">
 
-        <label>
-          当前余量 *
-
-          <input
-            id="quantity"
-            type="number"
-            min="0"
-            step="0.01"
-            value="0"
-            required
-          >
-
-        </label>
+        <input type="hidden" id="itemId" />
 
 
         <label>
-          单位
-
-          <select id="unit">
-
-            <option>片</option>
-            <option>袋</option>
-            <option>瓶</option>
-            <option>支</option>
-            <option>个</option>
-            <option>盒</option>
-            <option>包</option>
-            <option>罐</option>
-            <option>卷</option>
-            <option>套</option>
-            <option>件</option>
-            <option>箱</option>
-            <option>其他</option>
-
-          </select>
-
+          物品名称 *
+          <input id="itemName" required placeholder="例如：维生素C" />
         </label>
 
 
-        <label>
-          最低余量
+        <div class="form-row">
 
-          <input
-            id="minQuantity"
-            type="number"
-            min="0"
-            step="0.01"
-            value="0"
-          >
+          <label>
+            品牌
+            <input id="itemBrand" placeholder="例如：DHC" />
+          </label>
 
-        </label>
+          <label>
+            分类
+            <input id="itemCategory" placeholder="例如：保健品" />
+          </label>
 
-      </div>
+        </div>
 
 
-      <div class="two-columns">
+        <div class="form-row">
+
+          <label>
+            规格
+            <input id="itemSpec" placeholder="例如：1000mg" />
+          </label>
+
+          <label>
+            单位
+            <select id="itemUnit">
+              <option value="个">个</option>
+              <option value="片">片</option>
+              <option value="粒">粒</option>
+              <option value="袋">袋</option>
+              <option value="瓶">瓶</option>
+              <option value="支">支</option>
+              <option value="盒">盒</option>
+              <option value="包">包</option>
+              <option value="套">套</option>
+              <option value="件">件</option>
+              <option value="次">次</option>
+              <option value="其他">其他</option>
+            </select>
+          </label>
+
+        </div>
+
+
+        <!-- 价格功能 -->
+
+        <div class="price-section">
+
+          <div class="section-title">
+            💰 价格信息
+          </div>
+
+          <div class="form-row">
+
+            <label>
+              总价格
+              <input
+                id="itemPrice"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="例如：1200"
+                oninput="updateAveragePrice()"
+              />
+            </label>
+
+            <label>
+              购买数量
+              <input
+                id="itemPurchaseQuantity"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="例如：30"
+                oninput="updateAveragePrice()"
+              />
+            </label>
+
+          </div>
+
+
+          <div class="average-price-box">
+
+            <div>
+              <span>自动计算均价</span>
+              <small>总价格 ÷ 购买数量</small>
+            </div>
+
+            <strong id="averagePricePreview">
+              ¥0.00 / 个
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <!-- 当前余量 -->
+
+        <div class="form-row">
+
+          <label>
+            当前余量 *
+            <input
+              id="itemQuantity"
+              type="number"
+              min="0"
+              step="0.01"
+              required
+              placeholder="例如：20"
+            />
+          </label>
+
+          <label>
+            最低余量
+            <input
+              id="itemMinimum"
+              type="number"
+              min="0"
+              step="0.01"
+              value="0"
+              placeholder="例如：5"
+            />
+          </label>
+
+        </div>
+
 
         <label>
           到期日
-
-          <input
-            id="expiryDate"
-            type="date"
-          >
-
+          <input id="itemExpiry" type="date" />
         </label>
 
 
         <label>
-          购买日期
-
-          <input
-            id="purchaseDate"
-            type="date"
-          >
-
+          存放位置
+          <input id="itemLocation" placeholder="例如：厨房 / 抽屉A" />
         </label>
 
-      </div>
+
+        <label>
+          备注
+          <textarea
+            id="itemNotes"
+            rows="3"
+            placeholder="可以记录购买渠道、使用方法等"
+          ></textarea>
+        </label>
 
 
-      <label>
-        存放位置
-
-        <input
-          id="location"
-          placeholder="例如：卧室抽屉"
-        >
-
-      </label>
-
-
-      <label>
-        备注
-
-        <textarea
-          id="notes"
-          rows="3"
-          placeholder="例如：每天1片"
-        ></textarea>
-
-      </label>
-
-
-      <div class="modal-actions">
-
-        <button
-          type="button"
-          class="secondary-btn"
-          data-close="itemModal"
-        >
-          取消
-        </button>
-
-        <button
-          type="submit"
-          class="primary-btn"
-        >
+        <button class="submit-button" type="submit">
           保存
         </button>
 
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <!-- ==================== 管理对象 ==================== -->
+
+  <div class="modal" id="peopleModal">
+
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h2>管理对象</h2>
+        <button onclick="closePeopleModal()">×</button>
       </div>
 
-    </form>
 
-  </div>
-
-</div>
+      <div id="peopleList"></div>
 
 
+      <div class="add-person">
 
-<!-- ========================= -->
-<!-- 管理对象 -->
-<!-- ========================= -->
+        <input
+          id="newPersonName"
+          placeholder="例如：自己 / 妈妈 / 爸爸"
+        />
 
-<div id="peopleModal" class="modal hidden">
+        <button onclick="addPerson()">
+          ＋ 添加
+        </button>
 
-  <div class="modal-content small-modal">
-
-    <div class="modal-header">
-
-      <h2>
-        👥 管理对象
-      </h2>
-
-      <button
-        class="close-btn"
-        data-close="peopleModal"
-      >
-        ×
-      </button>
+      </div>
 
     </div>
 
-
-    <div id="peopleList"></div>
-
-
-    <div class="add-person">
-
-      <input
-        id="newPerson"
-        placeholder="例如：妈妈"
-      >
-
-      <button
-        id="addPersonBtn"
-        class="primary-btn"
-      >
-        添加
-      </button>
-
-    </div>
-
-
-    <p class="small-text">
-
-      不同管理对象的物品数据相互独立。
-
-    </p>
-
   </div>
 
-</div>
 
-
-
-<!-- Toast -->
-
-<div id="toast" class="toast"></div>
-
-
-<script src="app.js"></script>
+  <script src="app.js"></script>
 
 </body>
 </html>
