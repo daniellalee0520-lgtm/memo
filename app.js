@@ -1,12 +1,6 @@
 /* =========================================================
-   物品管理 App 2.0
-   UI：1.0 紧凑风格
-   功能：2.0 全功能
-   ========================================================= */
-
-
-/* =========================================================
-   1. 基础数据
+   我的物品管理
+   1.0 紧凑界面 + 2.0 全功能
    ========================================================= */
 
 const STORAGE_KEY = "my-item-manager-v2";
@@ -19,226 +13,214 @@ let state = {
 
 
 /* =========================================================
-   2. 初始化
+   初始化
    ========================================================= */
 
 document.addEventListener("DOMContentLoaded", () => {
-
   loadData();
-
   normalizeData();
-
-  setupEvents();
-
   renderAll();
-
 });
 
 
 /* =========================================================
-   3. LocalStorage
+   数据
    ========================================================= */
 
 function loadData() {
-
   try {
-
     const saved = localStorage.getItem(STORAGE_KEY);
 
-    if (saved) {
+    if (!saved) return;
 
-      const data = JSON.parse(saved);
+    const data = JSON.parse(saved);
 
-      if (data && typeof data === "object") {
+    if (!data || typeof data !== "object") return;
 
-        state = {
-          people:
-            Array.isArray(data.people) && data.people.length
-              ? data.people
-              : ["我"],
+    state.people =
+      Array.isArray(data.people) && data.people.length
+        ? data.people
+        : ["我"];
 
-          currentPerson:
-            data.currentPerson ||
-            (Array.isArray(data.people) && data.people.length
-              ? data.people[0]
-              : "我"),
+    state.currentPerson =
+      data.currentPerson &&
+      state.people.includes(data.currentPerson)
+        ? data.currentPerson
+        : state.people[0];
 
-          items:
-            Array.isArray(data.items)
-              ? data.items
-              : []
-        };
-
-      }
-
-    }
+    state.items =
+      Array.isArray(data.items)
+        ? data.items
+        : [];
 
   } catch (error) {
-
-    console.error("读取数据失败：", error);
-
+    console.error("读取数据失败:", error);
   }
-
 }
 
 
 function saveData() {
-
   try {
-
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify(state)
     );
-
   } catch (error) {
-
-    console.error("保存数据失败：", error);
-
+    console.error("保存数据失败:", error);
     alert("数据保存失败，请检查浏览器存储权限。");
-
   }
-
 }
 
 
-/* =========================================================
-   4. 数据标准化
-   ========================================================= */
-
 function normalizeData() {
 
-  if (!Array.isArray(state.people) || state.people.length === 0) {
+  if (
+    !Array.isArray(state.people) ||
+    state.people.length === 0
+  ) {
     state.people = ["我"];
   }
 
-  if (!state.people.includes(state.currentPerson)) {
-    state.currentPerson = state.people[0];
+  if (
+    !state.people.includes(
+      state.currentPerson
+    )
+  ) {
+    state.currentPerson =
+      state.people[0];
   }
 
   if (!Array.isArray(state.items)) {
     state.items = [];
   }
 
-  state.items = state.items.map(item => {
+  state.items =
+    state.items.map(item => {
 
-    const purchaseQuantity =
-      Number(
-        item.purchaseQuantity ??
-        item.quantityPurchased ??
-        item.amount ??
-        0
-      ) || 0;
+      const price =
+        Number(
+          item.price ??
+          item.totalPrice ??
+          0
+        ) || 0;
 
-    const price =
-      Number(
-        item.price ??
-        item.totalPrice ??
-        0
-      ) || 0;
+      const purchaseQuantity =
+        Number(
+          item.purchaseQuantity ??
+          item.quantityPurchased ??
+          item.amount ??
+          0
+        ) || 0;
 
-    let averagePrice =
-      Number(item.averagePrice || 0);
+      const averagePrice =
+        price > 0 &&
+        purchaseQuantity > 0
+          ? price / purchaseQuantity
+          : 0;
 
-    if (
-      purchaseQuantity > 0 &&
-      price > 0
-    ) {
-      averagePrice =
-        price / purchaseQuantity;
-    }
+      return {
 
-    return {
+        id:
+          item.id ||
+          generateId(),
 
-      id:
-        item.id ||
-        generateId(),
+        person:
+          item.person ||
+          state.currentPerson,
 
-      person:
-        item.person ||
-        state.currentPerson,
+        name:
+          item.name ||
+          "",
 
-      name:
-        item.name ||
-        "",
+        brand:
+          item.brand ||
+          "",
 
-      brand:
-        item.brand ||
-        "",
+        spec:
+          item.spec ||
+          "",
 
-      spec:
-        item.spec ||
-        "",
+        category:
+          item.category ||
+          "其他",
 
-      category:
-        item.category ||
-        "其他",
+        unit:
+          item.unit ||
+          "个",
 
-      unit:
-        item.unit ||
-        "个",
+        quantity:
+          Number(item.quantity ?? 0) || 0,
 
-      quantity:
-        Number(item.quantity ?? 0) || 0,
+        minimum:
+          Number(item.minimum ?? 0) || 0,
 
-      minimum:
-        Number(item.minimum ?? 0) || 0,
+        expiry:
+          item.expiry ||
+          "",
 
-      expiry:
-        item.expiry ||
-        "",
+        location:
+          item.location ||
+          "",
 
-      location:
-        item.location ||
-        "",
+        purchaseDate:
+          item.purchaseDate ||
+          "",
 
-      purchaseDate:
-        item.purchaseDate ||
-        "",
+        price:
 
-      notes:
-        item.notes ||
-        "",
+          price,
 
-      price:
-        price,
+        purchaseQuantity:
 
-      purchaseQuantity:
-        purchaseQuantity,
+          purchaseQuantity,
 
-      averagePrice:
-        averagePrice,
+        averagePrice:
 
-      createdAt:
-        item.createdAt ||
-        Date.now()
+          averagePrice,
 
-    };
+        notes:
+          item.notes ||
+          "",
 
-  });
+        createdAt:
+          item.createdAt ||
+          Date.now()
+
+      };
+
+    });
 
   saveData();
-
 }
 
 
 /* =========================================================
-   5. 工具函数
+   工具
    ========================================================= */
 
 function generateId() {
 
   return (
     Date.now().toString(36) +
-    Math.random().toString(36).substring(2, 9)
+    Math.random()
+      .toString(36)
+      .substring(2, 9)
   );
 
 }
 
 
+function $(selector) {
+  return document.querySelector(selector);
+}
+
+
 function escapeHTML(value) {
 
-  if (value === null || value === undefined) {
+  if (
+    value === null ||
+    value === undefined
+  ) {
     return "";
   }
 
@@ -248,7 +230,6 @@ function escapeHTML(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
-
 }
 
 
@@ -260,142 +241,238 @@ function escapeJS(value) {
 }
 
 
-function $(selector) {
-
-  return document.querySelector(selector);
-
-}
-
-
-function $all(selector) {
-
-  return Array.from(
-    document.querySelectorAll(selector)
-  );
-
-}
-
-
 /* =========================================================
-   6. 事件
+   管理对象
    ========================================================= */
 
-function setupEvents() {
+function renderPeople() {
 
-  const searchInput =
-    $("#searchInput") ||
-    $("#search");
+  const select =
+    $("#personSelect");
 
-  if (searchInput) {
+  if (!select) return;
 
-    searchInput.addEventListener(
-      "input",
-      renderItems
-    );
+  select.innerHTML =
+    state.people
+      .map(person => {
 
+        return `
+          <option value="${escapeHTML(person)}">
+            ${escapeHTML(person)}
+          </option>
+        `;
+
+      })
+      .join("");
+
+  select.value =
+    state.currentPerson;
+}
+
+
+function changePerson() {
+
+  const select =
+    $("#personSelect");
+
+  if (!select) return;
+
+  state.currentPerson =
+    select.value;
+
+  saveData();
+
+  renderAll();
+}
+
+
+function openPeopleModal() {
+
+  const modal =
+    $("#peopleModal");
+
+  if (!modal) return;
+
+  renderPeopleList();
+
+  modal.classList.add("show");
+}
+
+
+function closePeopleModal() {
+
+  const modal =
+    $("#peopleModal");
+
+  if (!modal) return;
+
+  modal.classList.remove("show");
+}
+
+
+function renderPeopleList() {
+
+  const container =
+    $("#peopleList");
+
+  if (!container) return;
+
+  container.innerHTML =
+    state.people
+      .map(person => {
+
+        return `
+
+          <div class="person-item">
+
+            <strong>
+              ${escapeHTML(person)}
+            </strong>
+
+            ${
+              state.people.length > 1
+                ? `
+                  <button
+                    type="button"
+                    onclick="deletePerson('${escapeJS(person)}')"
+                  >
+                    删除
+                  </button>
+                `
+                : ""
+            }
+
+          </div>
+
+        `;
+
+      })
+      .join("");
+}
+
+
+function addPerson() {
+
+  const input =
+    $("#newPersonName");
+
+  if (!input) return;
+
+  const name =
+    input.value.trim();
+
+  if (!name) {
+    alert("请输入姓名。");
+    return;
   }
 
-
-  const categoryFilter =
-    $("#categoryFilter");
-
-  if (categoryFilter) {
-
-    categoryFilter.addEventListener(
-      "change",
-      renderItems
-    );
-
+  if (
+    state.people.includes(name)
+  ) {
+    alert("这个管理对象已经存在。");
+    return;
   }
 
+  state.people.push(name);
 
-  const statusFilter =
-    $("#statusFilter");
+  state.currentPerson =
+    name;
 
-  if (statusFilter) {
+  input.value = "";
 
-    statusFilter.addEventListener(
-      "change",
-      renderItems
-    );
+  saveData();
 
+  renderAll();
+
+  renderPeopleList();
+}
+
+
+function deletePerson(name) {
+
+  if (
+    state.people.length <= 1
+  ) {
+    alert("至少需要保留一个管理对象。");
+    return;
   }
 
-
-  const sortSelect =
-    $("#sortSelect");
-
-  if (sortSelect) {
-
-    sortSelect.addEventListener(
-      "change",
-      renderItems
-    );
-
+  if (
+    !confirm(
+      `确定删除「${name}」吗？`
+    )
+  ) {
+    return;
   }
 
+  const replacement =
+    state.people.find(
+      person => person !== name
+    );
 
-  const personSelect =
-    $("#personSelect") ||
-    $("#personSelector");
+  /*
+   * 不删除这个人的物品。
+   * 将物品转移给剩余的第一个管理对象。
+   */
 
-  if (personSelect) {
+  state.items =
+    state.items.map(item => {
 
-    personSelect.addEventListener(
-      "change",
-      event => {
+      if (
+        item.person === name
+      ) {
 
-        state.currentPerson =
-          event.target.value;
-
-        saveData();
-
-        renderAll();
+        return {
+          ...item,
+          person: replacement
+        };
 
       }
+
+      return item;
+
+    });
+
+  state.people =
+    state.people.filter(
+      person =>
+        person !== name
     );
+
+  if (
+    state.currentPerson === name
+  ) {
+
+    state.currentPerson =
+      replacement;
 
   }
 
+  saveData();
 
-  /* 添加物品 */
+  renderAll();
 
-  $all(
-    '[onclick="openItemModal()"]'
-  ).forEach(button => {
-
-    button.addEventListener(
-      "click",
-      event => {
-
-        event.preventDefault();
-
-        openItemModal();
-
-      }
-    );
-
-  });
-
+  renderPeopleList();
 }
 
 
 /* =========================================================
-   7. 获取当前管理对象物品
+   当前管理对象物品
    ========================================================= */
 
 function getCurrentItems() {
 
   return state.items.filter(
     item =>
-      item.person === state.currentPerson
+      item.person ===
+      state.currentPerson
   );
 
 }
 
 
 /* =========================================================
-   8. 日期计算
+   日期
    ========================================================= */
 
 function getDaysUntilExpiry(expiry) {
@@ -419,25 +496,23 @@ function getDaysUntilExpiry(expiry) {
       `${expiry}T00:00:00`
     );
 
-  if (isNaN(expiryDate.getTime())) {
+  if (
+    isNaN(
+      expiryDate.getTime()
+    )
+  ) {
     return null;
   }
 
-  const difference =
-    expiryDate.getTime() -
-    today.getTime();
-
   return Math.round(
-    difference /
+    (
+      expiryDate.getTime() -
+      today.getTime()
+    ) /
     (1000 * 60 * 60 * 24)
   );
-
 }
 
-
-/* =========================================================
-   9. 到期文字
-   ========================================================= */
 
 function getExpiryText(expiry) {
 
@@ -449,44 +524,39 @@ function getExpiryText(expiry) {
   }
 
   if (days < 0) {
-
     return `已过期 ${Math.abs(days)} 天`;
-
   }
 
   if (days === 0) {
-
     return "今天到期";
-
   }
 
   return `剩余 ${days} 天`;
-
 }
 
 
 /* =========================================================
-   10. 状态
+   状态
    ========================================================= */
 
 function getItemStatus(item) {
 
-  if (Number(item.quantity) <= 0) {
-
+  if (
+    Number(item.quantity) <= 0
+  ) {
     return "empty";
-
   }
 
   const days =
-    getDaysUntilExpiry(item.expiry);
+    getDaysUntilExpiry(
+      item.expiry
+    );
 
   if (
     days !== null &&
     days < 0
   ) {
-
     return "expired";
-
   }
 
   if (
@@ -494,28 +564,19 @@ function getItemStatus(item) {
     Number(item.quantity) <=
       Number(item.minimum)
   ) {
-
     return "low";
-
   }
 
   if (
     days !== null &&
     days <= 30
   ) {
-
     return "soon";
-
   }
 
   return "normal";
-
 }
 
-
-/* =========================================================
-   11. 状态文字
-   ========================================================= */
 
 function getStatusText(status) {
 
@@ -535,14 +596,12 @@ function getStatusText(status) {
 
     default:
       return "正常";
-
   }
-
 }
 
 
 /* =========================================================
-   12. 仪表盘
+   仪表盘
    ========================================================= */
 
 function renderDashboard() {
@@ -559,11 +618,15 @@ function renderDashboard() {
     const status =
       getItemStatus(item);
 
-    if (status === "expired") {
+    if (
+      status === "expired"
+    ) {
       expired++;
     }
 
-    if (status === "soon") {
+    if (
+      status === "soon"
+    ) {
       soon++;
     }
 
@@ -578,131 +641,106 @@ function renderDashboard() {
 
 
   setText(
-    "#totalItems",
+    "#totalCount",
     items.length
   );
 
   setText(
-    "#expiredItems",
+    "#expiredCount",
     expired
   );
 
   setText(
-    "#soonItems",
+    "#soonCount",
     soon
   );
 
   setText(
-    "#lowItems",
+    "#lowCount",
     low
   );
-
-
-  /* 兼容可能的旧 ID */
-
-  setText(
-    "#statItems",
-    items.length
-  );
-
-  setText(
-    "#statExpired",
-    expired
-  );
-
-  setText(
-    "#statSoon",
-    soon
-  );
-
-  setText(
-    "#statLow",
-    low
-  );
-
 }
 
 
-/* =========================================================
-   13. 设置文字
-   ========================================================= */
-
-function setText(selector, value) {
+function setText(
+  selector,
+  value
+) {
 
   const element =
     $(selector);
 
   if (element) {
-
     element.textContent =
       value;
-
   }
-
 }
 
 
 /* =========================================================
-   14. 分类
+   分类
    ========================================================= */
-
-function getCategories() {
-
-  const categories =
-    getCurrentItems()
-      .map(item => item.category)
-      .filter(Boolean);
-
-  return [
-    ...new Set(categories)
-  ];
-
-}
-
 
 function renderCategoryFilter() {
 
   const select =
     $("#categoryFilter");
 
-  if (!select) {
-    return;
-  }
+  if (!select) return;
 
   const oldValue =
     select.value;
 
   const categories =
-    getCategories();
+    [
+      ...new Set(
+        getCurrentItems()
+          .map(
+            item =>
+              item.category
+          )
+          .filter(Boolean)
+      )
+    ];
 
   select.innerHTML =
-    `<option value="">全部分类</option>` +
+    `
+      <option value="all">
+        全部分类
+      </option>
+    ` +
     categories
-      .sort((a, b) =>
-        a.localeCompare(b, "zh")
+      .sort(
+        (a, b) =>
+          a.localeCompare(
+            b,
+            "zh"
+          )
       )
       .map(
-        category =>
-          `<option value="${escapeHTML(category)}">
-             ${escapeHTML(category)}
-           </option>`
+        category => `
+          <option value="${escapeHTML(category)}">
+            ${escapeHTML(category)}
+          </option>
+        `
       )
       .join("");
 
   if (
+    oldValue === "all" ||
     categories.includes(oldValue)
   ) {
-
     select.value =
       oldValue;
-
+  } else {
+    select.value =
+      "all";
   }
-
 }
 
 
 /* =========================================================
-   15. 搜索 + 筛选 + 排序
+   搜索 + 筛选 + 排序
    ========================================================= */
 
 function getFilteredItems() {
@@ -710,17 +748,18 @@ function getFilteredItems() {
   let items =
     [...getCurrentItems()];
 
-  const searchInput =
-    $("#searchInput") ||
-    $("#search");
+
+  /* 搜索 */
+
+  const search =
+    $("#searchInput");
 
   const keyword =
-    searchInput
-      ? searchInput.value
-        .trim()
-        .toLowerCase()
+    search
+      ? search.value
+          .trim()
+          .toLowerCase()
       : "";
-
 
   if (keyword) {
 
@@ -740,52 +779,76 @@ function getFilteredItems() {
           .join(" ")
           .toLowerCase();
 
-        return text.includes(keyword);
+        return text.includes(
+          keyword
+        );
 
       });
 
   }
 
 
-  const categoryFilter =
+  /* 分类 */
+
+  const categorySelect =
     $("#categoryFilter");
 
   const category =
-    categoryFilter
-      ? categoryFilter.value
-      : "";
+    categorySelect
+      ? categorySelect.value
+      : "all";
 
+  /*
+   * 这里特别修复了：
+   * all = 全部，而不是过滤条件
+   */
 
-  if (category) {
+  if (
+    category &&
+    category !== "all"
+  ) {
 
     items =
       items.filter(
         item =>
-          item.category === category
+          item.category ===
+          category
       );
 
   }
 
 
-  const statusFilter =
+  /* 状态 */
+
+  const statusSelect =
     $("#statusFilter");
 
   const status =
-    statusFilter
-      ? statusFilter.value
-      : "";
+    statusSelect
+      ? statusSelect.value
+      : "all";
 
+  /*
+   * 这里同样修复：
+   * all = 全部
+   */
 
-  if (status) {
+  if (
+    status &&
+    status !== "all"
+  ) {
 
     items =
       items.filter(
         item =>
-          getItemStatus(item) === status
+          getItemStatus(item) ===
+          status
       );
 
   }
 
+
+  /* 排序 */
 
   const sortSelect =
     $("#sortSelect");
@@ -793,7 +856,7 @@ function getFilteredItems() {
   const sort =
     sortSelect
       ? sortSelect.value
-      : "created";
+      : "added-desc";
 
 
   items.sort(
@@ -812,10 +875,14 @@ function getFilteredItems() {
         case "expiry": {
 
           const da =
-            getDaysUntilExpiry(a.expiry);
+            getDaysUntilExpiry(
+              a.expiry
+            );
 
           const db =
-            getDaysUntilExpiry(b.expiry);
+            getDaysUntilExpiry(
+              b.expiry
+            );
 
           if (da === null) {
             return 1;
@@ -826,27 +893,18 @@ function getFilteredItems() {
           }
 
           return da - db;
-
         }
 
 
         case "quantity":
 
           return (
-            Number(a.quantity) -
-            Number(b.quantity)
+            Number(a.quantity || 0) -
+            Number(b.quantity || 0)
           );
 
 
         case "price":
-
-          return (
-            Number(b.price || 0) -
-            Number(a.price || 0)
-          );
-
-
-        case "average":
 
           return (
             Number(a.averagePrice || 0) -
@@ -854,14 +912,14 @@ function getFilteredItems() {
           );
 
 
-        case "created":
+        case "added-desc":
+
         default:
 
           return (
             Number(b.createdAt || 0) -
             Number(a.createdAt || 0)
           );
-
       }
 
     }
@@ -869,41 +927,34 @@ function getFilteredItems() {
 
 
   return items;
-
 }
 
 
 /* =========================================================
-   16. 渲染所有物品
+   渲染物品
    ========================================================= */
 
 function renderItems() {
 
   const container =
-    $("#itemsList") ||
-    $("#itemList") ||
-    $("#itemsContainer");
+    $("#itemList");
 
-  if (!container) {
-    return;
-  }
+  if (!container) return;
 
   const items =
     getFilteredItems();
 
 
-  if (items.length === 0) {
+  if (
+    items.length === 0
+  ) {
 
     container.innerHTML = `
 
       <div style="
-        background:white;
-        border:1px solid #dfe4ec;
-        border-radius:16px;
-        padding:30px 15px;
         text-align:center;
+        padding:30px 15px;
         color:#8b929d;
-        font-size:14px;
       ">
 
         暂无物品
@@ -913,7 +964,6 @@ function renderItems() {
     `;
 
     return;
-
   }
 
 
@@ -924,12 +974,11 @@ function renderItems() {
           renderItemCard(item)
       )
       .join("");
-
 }
 
 
 /* =========================================================
-   17. 物品卡片
+   物品卡片
    ========================================================= */
 
 function renderItemCard(item) {
@@ -938,10 +987,14 @@ function renderItemCard(item) {
     getItemStatus(item);
 
   const expiryText =
-    getExpiryText(item.expiry);
+    getExpiryText(
+      item.expiry
+    );
 
   const days =
-    getDaysUntilExpiry(item.expiry);
+    getDaysUntilExpiry(
+      item.expiry
+    );
 
 
   let expiryClass =
@@ -952,65 +1005,41 @@ function renderItemCard(item) {
     days < 0
   ) {
 
-    expiryClass = "red";
+    expiryClass =
+      "red";
 
   } else if (
     days !== null &&
     days <= 30
   ) {
 
-    expiryClass = "orange";
+    expiryClass =
+      "orange";
 
   }
 
 
   const price =
-    Number(item.price || 0);
-
+    Number(
+      item.price || 0
+    );
 
   const purchaseQuantity =
     Number(
       item.purchaseQuantity || 0
     );
 
-
-  let averagePrice =
-    Number(
-      item.averagePrice || 0
-    );
-
-
-  /* 自动重新计算均价 */
-
-  if (
+  const averagePrice =
     price > 0 &&
     purchaseQuantity > 0
-  ) {
-
-    averagePrice =
-      price /
-      purchaseQuantity;
-
-  }
-
-
-  const priceText =
-    price > 0
-      ? `¥${price.toFixed(2)}`
-      : "—";
-
-
-  const averageText =
-    averagePrice > 0
-      ? `¥${averagePrice.toFixed(2)} / ${escapeHTML(item.unit || "个")}`
-      : "—";
+      ? price /
+        purchaseQuantity
+      : 0;
 
 
   return `
 
     <div class="item-card">
-
-      <!-- 顶部 -->
 
       <div class="item-top">
 
@@ -1042,7 +1071,8 @@ function renderItemCard(item) {
             }
 
             ${
-              (item.brand || item.spec) &&
+              (item.brand ||
+               item.spec) &&
               item.category
                 ? " · "
                 : ""
@@ -1050,7 +1080,9 @@ function renderItemCard(item) {
 
             ${
               item.category
-                ? escapeHTML(item.category)
+                ? escapeHTML(
+                    item.category
+                  )
                 : ""
             }
 
@@ -1071,45 +1103,27 @@ function renderItemCard(item) {
       </div>
 
 
-      <!-- 标签 -->
-
       <div class="item-tags">
 
-        ${
-          item.category
-            ? `
-              <span class="item-tag">
-                ${escapeHTML(item.category)}
-              </span>
-            `
-            : ""
-        }
-
+        <span class="item-tag">
+          ${escapeHTML(
+            item.category
+          )}
+        </span>
 
         <span class="
           item-tag
           ${expiryClass}
         ">
 
-          ${escapeHTML(expiryText)}
+          ${escapeHTML(
+            expiryText
+          )}
 
         </span>
 
-
-        ${
-          item.minimum > 0
-            ? `
-              <span class="item-tag">
-                最低 ${item.minimum}${escapeHTML(item.unit)}
-              </span>
-            `
-            : ""
-        }
-
       </div>
 
-
-      <!-- 当前余量 -->
 
       <div class="quantity-box">
 
@@ -1122,7 +1136,9 @@ function renderItemCard(item) {
           <div class="quantity-value">
 
             ${item.quantity}
-            ${escapeHTML(item.unit)}
+            ${escapeHTML(
+              item.unit
+            )}
 
           </div>
 
@@ -1133,14 +1149,24 @@ function renderItemCard(item) {
 
           <button
             type="button"
-            onclick="changeQuantity('${escapeJS(item.id)}', -1)"
+            onclick="
+              changeQuantity(
+                '${escapeJS(item.id)}',
+                -1
+              )
+            "
           >
             −
           </button>
 
           <button
             type="button"
-            onclick="changeQuantity('${escapeJS(item.id)}', 1)"
+            onclick="
+              changeQuantity(
+                '${escapeJS(item.id)}',
+                1
+              )
+            "
           >
             ＋
           </button>
@@ -1150,12 +1176,8 @@ function renderItemCard(item) {
       </div>
 
 
-      <!-- 信息 -->
-
       <div class="item-info-grid">
 
-
-        <!-- 到期日 -->
 
         <div class="info-box">
 
@@ -1167,7 +1189,9 @@ function renderItemCard(item) {
 
             ${
               item.expiry
-                ? escapeHTML(item.expiry)
+                ? escapeHTML(
+                    item.expiry
+                  )
                 : "—"
             }
 
@@ -1175,8 +1199,6 @@ function renderItemCard(item) {
 
         </div>
 
-
-        <!-- 状态 -->
 
         <div class="info-box">
 
@@ -1186,14 +1208,14 @@ function renderItemCard(item) {
 
           <div class="info-value">
 
-            ${escapeHTML(expiryText)}
+            ${escapeHTML(
+              expiryText
+            )}
 
           </div>
 
         </div>
 
-
-        <!-- 存放位置 -->
 
         <div class="info-box">
 
@@ -1205,7 +1227,9 @@ function renderItemCard(item) {
 
             ${
               item.location
-                ? escapeHTML(item.location)
+                ? escapeHTML(
+                    item.location
+                  )
                 : "—"
             }
 
@@ -1213,8 +1237,6 @@ function renderItemCard(item) {
 
         </div>
 
-
-        <!-- 购买日期 -->
 
         <div class="info-box">
 
@@ -1226,7 +1248,9 @@ function renderItemCard(item) {
 
             ${
               item.purchaseDate
-                ? escapeHTML(item.purchaseDate)
+                ? escapeHTML(
+                    item.purchaseDate
+                  )
                 : "—"
             }
 
@@ -1234,8 +1258,6 @@ function renderItemCard(item) {
 
         </div>
 
-
-        <!-- 总价格 -->
 
         <div class="info-box">
 
@@ -1245,14 +1267,16 @@ function renderItemCard(item) {
 
           <div class="info-value">
 
-            ${priceText}
+            ${
+              price > 0
+                ? `¥${price.toFixed(2)}`
+                : "—"
+            }
 
           </div>
 
         </div>
 
-
-        <!-- 均价 -->
 
         <div class="info-box">
 
@@ -1260,16 +1284,19 @@ function renderItemCard(item) {
             均价
           </div>
 
-          <div class="
-            info-value
-            average-price
-          ">
-
-            ${averageText}
+          <div class="info-value">
 
             ${
-              price > 0 &&
-              purchaseQuantity > 0
+              averagePrice > 0
+                ? `
+                  ¥${averagePrice.toFixed(2)}
+                  /${escapeHTML(item.unit)}
+                `
+                : "—"
+            }
+
+            ${
+              averagePrice > 0
                 ? `
                   <small>
                     ¥${price.toFixed(2)}
@@ -1288,40 +1315,45 @@ function renderItemCard(item) {
       </div>
 
 
-      <!-- 备注 -->
-
       ${
         item.notes
           ? `
             <div
               class="item-meta"
-              style="margin-top:9px;"
+              style="margin-top:8px;"
             >
-
               📝
-              ${escapeHTML(item.notes)}
-
+              ${escapeHTML(
+                item.notes
+              )}
             </div>
           `
           : ""
       }
 
 
-      <!-- 操作 -->
-
       <div class="item-actions">
 
         <button
           type="button"
-          onclick="openItemModal('${escapeJS(item.id)}')"
+          onclick="
+            openItemModal(
+              '${escapeJS(item.id)}'
+            )
+          "
         >
           ✏️ 编辑
         </button>
 
+
         <button
           type="button"
           class="delete"
-          onclick="deleteItem('${escapeJS(item.id)}')"
+          onclick="
+            deleteItem(
+              '${escapeJS(item.id)}'
+            )
+          "
         >
           🗑 删除
         </button>
@@ -1331,70 +1363,55 @@ function renderItemCard(item) {
     </div>
 
   `;
-
 }
 
 
 /* =========================================================
-   18. 快速修改余量
+   快速修改余量
    ========================================================= */
 
-function changeQuantity(id, amount) {
+function changeQuantity(
+  id,
+  amount
+) {
 
   const item =
     state.items.find(
       item =>
-        String(item.id) === String(id)
+        String(item.id) ===
+        String(id)
     );
 
-  if (!item) {
-    return;
-  }
-
-  const oldQuantity =
-    Number(item.quantity || 0);
+  if (!item) return;
 
   item.quantity =
     Math.max(
       0,
-      oldQuantity + Number(amount)
+      Number(item.quantity || 0) +
+      Number(amount)
     );
-
 
   saveData();
 
   renderAll();
-
 }
 
 
 /* =========================================================
-   19. 打开添加 / 编辑窗口
+   添加 / 编辑
    ========================================================= */
 
-function openItemModal(id = null) {
+function openItemModal(
+  id = null
+) {
 
-  let modal =
+  const modal =
     $("#itemModal");
-
-
-  /* 如果 HTML 没有 modal，
-     自动创建一个 */
-
-  if (!modal) {
-
-    createItemModal();
-
-    modal =
-      $("#itemModal");
-
-  }
-
 
   const form =
     $("#itemForm");
 
-  if (!form) {
+  if (!modal || !form) {
     return;
   }
 
@@ -1412,7 +1429,7 @@ function openItemModal(id = null) {
 
 
   const title =
-    $("#itemModalTitle");
+    $("#modalTitle");
 
 
   if (id) {
@@ -1420,12 +1437,11 @@ function openItemModal(id = null) {
     const item =
       state.items.find(
         item =>
-          String(item.id) === String(id)
+          String(item.id) ===
+          String(id)
       );
 
-    if (!item) {
-      return;
-    }
+    if (!item) return;
 
 
     if (title) {
@@ -1434,67 +1450,62 @@ function openItemModal(id = null) {
     }
 
 
-    fillInput(
+    setInput(
       "itemName",
       item.name
     );
 
-    fillInput(
+    setInput(
       "itemBrand",
       item.brand
     );
 
-    fillInput(
-      "itemSpec",
-      item.spec
-    );
-
-    fillInput(
+    setInput(
       "itemCategory",
       item.category
     );
 
-    fillInput(
+    setInput(
+      "itemSpec",
+      item.spec
+    );
+
+    setInput(
       "itemUnit",
       item.unit
     );
 
-    fillInput(
-      "itemQuantity",
-      item.quantity
-    );
-
-    fillInput(
-      "itemMinimum",
-      item.minimum
-    );
-
-    fillInput(
-      "itemExpiry",
-      item.expiry
-    );
-
-    fillInput(
-      "itemLocation",
-      item.location
-    );
-
-    fillInput(
-      "itemPurchaseDate",
-      item.purchaseDate
-    );
-
-    fillInput(
+    setInput(
       "itemPrice",
       item.price
     );
 
-    fillInput(
+    setInput(
       "itemPurchaseQuantity",
       item.purchaseQuantity
     );
 
-    fillInput(
+    setInput(
+      "itemQuantity",
+      item.quantity
+    );
+
+    setInput(
+      "itemMinimum",
+      item.minimum
+    );
+
+    setInput(
+      "itemExpiry",
+      item.expiry
+    );
+
+    setInput(
+      "itemLocation",
+      item.location
+    );
+
+    setInput(
       "itemNotes",
       item.notes
     );
@@ -1507,409 +1518,94 @@ function openItemModal(id = null) {
         "添加物品";
     }
 
-
-    fillInput(
-      "itemUnit",
-      "个"
-    );
-
-    fillInput(
+    setInput(
       "itemCategory",
       "其他"
     );
 
-    fillInput(
+    setInput(
+      "itemUnit",
+      "个"
+    );
+
+    setInput(
       "itemQuantity",
       0
     );
 
-    fillInput(
+    setInput(
       "itemMinimum",
       0
     );
 
-
-    const today =
-      new Date()
-        .toISOString()
-        .split("T")[0];
-
-    fillInput(
-      "itemPurchaseDate",
-      today
-    );
-
   }
 
 
-  updateAveragePreview();
-
+  updateAveragePrice();
 
   modal.classList.add(
     "show"
   );
-
 }
 
 
-/* =========================================================
-   20. 创建添加窗口
-   ========================================================= */
-
-function createItemModal() {
+function closeItemModal() {
 
   const modal =
-    document.createElement("div");
+    $("#itemModal");
 
-  modal.id =
-    "itemModal";
+  if (!modal) return;
 
-  modal.className =
-    "modal";
-
-
-  modal.innerHTML = `
-
-    <div class="modal-content">
-
-      <div class="modal-header">
-
-        <h2 id="itemModalTitle">
-          添加物品
-        </h2>
-
-        <button
-          type="button"
-          onclick="closeItemModal()"
-        >
-          ×
-        </button>
-
-      </div>
-
-
-      <form
-        id="itemForm"
-        onsubmit="saveItem(event)"
-      >
-
-        <input
-          type="hidden"
-          id="itemId"
-        >
-
-
-        <label>
-          物品名称
-          <input
-            id="itemName"
-            required
-            placeholder="例如：卫生巾"
-          >
-        </label>
-
-
-        <div class="form-row">
-
-          <label>
-            品牌
-            <input
-              id="itemBrand"
-              placeholder="例如：护舒宝"
-            >
-          </label>
-
-
-          <label>
-            规格
-            <input
-              id="itemSpec"
-              placeholder="例如：270mm"
-            >
-          </label>
-
-        </div>
-
-
-        <div class="form-row">
-
-          <label>
-            分类
-            <input
-              id="itemCategory"
-              placeholder="例如：日用品"
-            >
-          </label>
-
-
-          <label>
-            单位
-            <select id="itemUnit">
-
-              <option value="个">个</option>
-              <option value="片">片</option>
-              <option value="袋">袋</option>
-              <option value="瓶">瓶</option>
-              <option value="支">支</option>
-              <option value="盒">盒</option>
-              <option value="包">包</option>
-              <option value="卷">卷</option>
-              <option value="件">件</option>
-              <option value="套">套</option>
-              <option value="条">条</option>
-              <option value="双">双</option>
-              <option value="罐">罐</option>
-
-            </select>
-          </label>
-
-        </div>
-
-
-        <div class="form-row">
-
-          <label>
-            当前余量
-            <input
-              id="itemQuantity"
-              type="number"
-              min="0"
-              step="1"
-              value="0"
-            >
-          </label>
-
-
-          <label>
-            最低余量
-            <input
-              id="itemMinimum"
-              type="number"
-              min="0"
-              step="1"
-              value="0"
-            >
-          </label>
-
-        </div>
-
-
-        <div class="form-row">
-
-          <label>
-            到期日
-            <input
-              id="itemExpiry"
-              type="date"
-            >
-          </label>
-
-
-          <label>
-            购买日期
-            <input
-              id="itemPurchaseDate"
-              type="date"
-            >
-          </label>
-
-        </div>
-
-
-        <label>
-          存放位置
-          <input
-            id="itemLocation"
-            placeholder="例如：抽屉"
-          >
-        </label>
-
-
-        <!-- 价格 -->
-
-        <div class="price-section">
-
-          <div class="section-title">
-            💰 价格信息
-          </div>
-
-
-          <div class="form-row">
-
-            <label>
-              总价格（¥）
-              <input
-                id="itemPrice"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="例如：15.21"
-              >
-            </label>
-
-
-            <label>
-              购买数量
-              <input
-                id="itemPurchaseQuantity"
-                type="number"
-                min="0"
-                step="1"
-                placeholder="例如：30"
-              >
-            </label>
-
-          </div>
-
-
-          <div class="average-price-box">
-
-            <div>
-
-              <span>
-                自动均价
-              </span>
-
-              <small>
-                总价格 ÷ 购买数量
-              </small>
-
-            </div>
-
-
-            <strong
-              id="averagePricePreview"
-            >
-              —
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        <label>
-          备注
-          <textarea
-            id="itemNotes"
-            rows="2"
-            placeholder="其他备注……"
-          ></textarea>
-        </label>
-
-
-        <button
-          class="submit-button"
-          type="submit"
-        >
-          保存物品
-        </button>
-
-      </form>
-
-    </div>
-
-  `;
-
-
-  document.body.appendChild(
-    modal
+  modal.classList.remove(
+    "show"
   );
-
-
-  /* 点击背景关闭 */
-
-  modal.addEventListener(
-    "click",
-    event => {
-
-      if (
-        event.target === modal
-      ) {
-
-        closeItemModal();
-
-      }
-
-    }
-  );
-
-
-  /* 均价实时计算 */
-
-  const price =
-    $("#itemPrice");
-
-  const purchaseQuantity =
-    $("#itemPurchaseQuantity");
-
-
-  if (price) {
-
-    price.addEventListener(
-      "input",
-      updateAveragePreview
-    );
-
-  }
-
-
-  if (purchaseQuantity) {
-
-    purchaseQuantity.addEventListener(
-      "input",
-      updateAveragePreview
-    );
-
-  }
-
 }
 
 
-/* =========================================================
-   21. 填充输入框
-   ========================================================= */
-
-function fillInput(id, value) {
+function setInput(
+  id,
+  value
+) {
 
   const element =
     document.getElementById(id);
 
   if (element) {
-
     element.value =
       value ?? "";
-
   }
-
 }
 
 
 /* =========================================================
-   22. 均价实时预览
+   均价
    ========================================================= */
 
-function updateAveragePreview() {
+function updateAveragePrice() {
 
   const price =
     Number(
-      getValue("itemPrice")
+      getValue(
+        "itemPrice"
+      ) || 0
     );
-
 
   const quantity =
     Number(
-      getValue("itemPurchaseQuantity")
+      getValue(
+        "itemPurchaseQuantity"
+      ) || 0
     );
 
+  const unit =
+    getValue(
+      "itemUnit"
+    ) || "个";
 
   const preview =
     $("#averagePricePreview");
 
-
-  if (!preview) {
-    return;
-  }
+  if (!preview) return;
 
 
   if (
@@ -1917,30 +1613,27 @@ function updateAveragePreview() {
     quantity > 0
   ) {
 
-    const average =
-      price / quantity;
-
-    const unit =
-      getValue("itemUnit") ||
-      "个";
-
-
     preview.textContent =
-      `¥${average.toFixed(2)} / ${unit}`;
+      `¥${(
+        price / quantity
+      ).toFixed(2)} / ${unit}`;
 
   } else {
 
     preview.textContent =
-      "—";
+      "¥0.00 / 个";
 
   }
-
 }
 
 
-/* =========================================================
-   23. 获取表单值
-   ========================================================= */
+/*
+ * 兼容我之前版本里的函数名
+ */
+function updateAveragePreview() {
+  updateAveragePrice();
+}
+
 
 function getValue(id) {
 
@@ -1950,12 +1643,11 @@ function getValue(id) {
   return element
     ? element.value
     : "";
-
 }
 
 
 /* =========================================================
-   24. 保存物品
+   保存
    ========================================================= */
 
 function saveItem(event) {
@@ -1965,27 +1657,29 @@ function saveItem(event) {
   }
 
 
-  const id =
-    getValue("itemId");
-
-
   const name =
-    getValue("itemName")
-      .trim();
+    getValue(
+      "itemName"
+    ).trim();
 
 
   if (!name) {
-
     alert("请输入物品名称。");
-
     return;
-
   }
+
+
+  const id =
+    getValue(
+      "itemId"
+    );
 
 
   const price =
     Number(
-      getValue("itemPrice") || 0
+      getValue(
+        "itemPrice"
+      ) || 0
     );
 
 
@@ -1997,22 +1691,15 @@ function saveItem(event) {
     );
 
 
-  let averagePrice = 0;
-
-
-  if (
+  const averagePrice =
     price > 0 &&
     purchaseQuantity > 0
-  ) {
-
-    averagePrice =
-      price /
-      purchaseQuantity;
-
-  }
+      ? price /
+        purchaseQuantity
+      : 0;
 
 
-  const itemData = {
+  const data = {
 
     person:
       state.currentPerson,
@@ -2021,41 +1708,26 @@ function saveItem(event) {
       name,
 
     brand:
-      getValue("itemBrand")
-        .trim(),
-
-    spec:
-      getValue("itemSpec")
-        .trim(),
+      getValue(
+        "itemBrand"
+      ).trim(),
 
     category:
-      getValue("itemCategory")
-        .trim() ||
+      getValue(
+        "itemCategory"
+      ).trim() ||
       "其他",
 
+    spec:
+      getValue(
+        "itemSpec"
+      ).trim(),
+
     unit:
-      getValue("itemUnit") ||
+      getValue(
+        "itemUnit"
+      ) ||
       "个",
-
-    quantity:
-      Number(
-        getValue("itemQuantity") || 0
-      ),
-
-    minimum:
-      Number(
-        getValue("itemMinimum") || 0
-      ),
-
-    expiry:
-      getValue("itemExpiry"),
-
-    location:
-      getValue("itemLocation")
-        .trim(),
-
-    purchaseDate:
-      getValue("itemPurchaseDate"),
 
     price:
       price,
@@ -2066,14 +1738,37 @@ function saveItem(event) {
     averagePrice:
       averagePrice,
 
+    quantity:
+      Number(
+        getValue(
+          "itemQuantity"
+        ) || 0
+      ),
+
+    minimum:
+      Number(
+        getValue(
+          "itemMinimum"
+        ) || 0
+      ),
+
+    expiry:
+      getValue(
+        "itemExpiry"
+      ),
+
+    location:
+      getValue(
+        "itemLocation"
+      ).trim(),
+
     notes:
-      getValue("itemNotes")
-        .trim()
+      getValue(
+        "itemNotes"
+      ).trim()
 
   };
 
-
-  /* 编辑 */
 
   if (id) {
 
@@ -2084,30 +1779,26 @@ function saveItem(event) {
           String(id)
       );
 
-
     if (index !== -1) {
 
       state.items[index] = {
 
         ...state.items[index],
 
-        ...itemData
+        ...data
 
       };
 
     }
 
-
   } else {
-
-    /* 新增 */
 
     state.items.push({
 
       id:
         generateId(),
 
-      ...itemData,
+      ...data,
 
       createdAt:
         Date.now()
@@ -2122,32 +1813,11 @@ function saveItem(event) {
   closeItemModal();
 
   renderAll();
-
 }
 
 
 /* =========================================================
-   25. 关闭窗口
-   ========================================================= */
-
-function closeItemModal() {
-
-  const modal =
-    $("#itemModal");
-
-  if (modal) {
-
-    modal.classList.remove(
-      "show"
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   26. 删除
+   删除
    ========================================================= */
 
 function deleteItem(id) {
@@ -2159,19 +1829,14 @@ function deleteItem(id) {
         String(id)
     );
 
-
-  if (!item) {
-    return;
-  }
+  if (!item) return;
 
 
-  const confirmed =
-    confirm(
+  if (
+    !confirm(
       `确定删除「${item.name}」吗？`
-    );
-
-
-  if (!confirmed) {
+    )
+  ) {
     return;
   }
 
@@ -2187,373 +1852,11 @@ function deleteItem(id) {
   saveData();
 
   renderAll();
-
 }
 
 
 /* =========================================================
-   27. 管理对象
-   ========================================================= */
-
-function renderPeople() {
-
-  const select =
-    $("#personSelect") ||
-    $("#personSelector");
-
-
-  if (!select) {
-    return;
-  }
-
-
-  const oldValue =
-    state.currentPerson;
-
-
-  select.innerHTML =
-    state.people
-      .map(
-        person =>
-          `<option value="${escapeHTML(person)}">
-            ${escapeHTML(person)}
-          </option>`
-      )
-      .join("");
-
-
-  if (
-    state.people.includes(oldValue)
-  ) {
-
-    select.value =
-      oldValue;
-
-  }
-
-}
-
-
-/* =========================================================
-   28. 管理对象窗口
-   ========================================================= */
-
-function openPeopleModal() {
-
-  let modal =
-    $("#peopleModal");
-
-
-  if (!modal) {
-
-    createPeopleModal();
-
-    modal =
-      $("#peopleModal");
-
-  }
-
-
-  renderPeopleList();
-
-
-  modal.classList.add(
-    "show"
-  );
-
-}
-
-
-function closePeopleModal() {
-
-  const modal =
-    $("#peopleModal");
-
-  if (modal) {
-
-    modal.classList.remove(
-      "show"
-    );
-
-  }
-
-}
-
-
-/* =========================================================
-   29. 创建管理对象窗口
-   ========================================================= */
-
-function createPeopleModal() {
-
-  const modal =
-    document.createElement("div");
-
-  modal.id =
-    "peopleModal";
-
-  modal.className =
-    "modal";
-
-
-  modal.innerHTML = `
-
-    <div class="modal-content">
-
-      <div class="modal-header">
-
-        <h2>
-          管理对象
-        </h2>
-
-        <button
-          type="button"
-          onclick="closePeopleModal()"
-        >
-          ×
-        </button>
-
-      </div>
-
-
-      <div id="peopleList">
-      </div>
-
-
-      <div class="add-person">
-
-        <input
-          id="newPersonName"
-          placeholder="输入姓名"
-        >
-
-        <button
-          type="button"
-          onclick="addPerson()"
-        >
-          添加
-        </button>
-
-      </div>
-
-    </div>
-
-  `;
-
-
-  document.body.appendChild(
-    modal
-  );
-
-
-  modal.addEventListener(
-    "click",
-    event => {
-
-      if (
-        event.target === modal
-      ) {
-
-        closePeopleModal();
-
-      }
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   30. 渲染管理对象列表
-   ========================================================= */
-
-function renderPeopleList() {
-
-  const container =
-    $("#peopleList");
-
-  if (!container) {
-    return;
-  }
-
-
-  container.innerHTML =
-    state.people
-      .map(
-        person => `
-
-          <div class="person-item">
-
-            <strong>
-              ${escapeHTML(person)}
-            </strong>
-
-            ${
-              state.people.length > 1
-                ? `
-                  <button
-                    type="button"
-                    onclick="deletePerson('${escapeJS(person)}')"
-                  >
-                    删除
-                  </button>
-                `
-                : ""
-            }
-
-          </div>
-
-        `
-      )
-      .join("");
-
-}
-
-
-/* =========================================================
-   31. 添加管理对象
-   ========================================================= */
-
-function addPerson() {
-
-  const input =
-    $("#newPersonName");
-
-
-  if (!input) {
-    return;
-  }
-
-
-  const name =
-    input.value.trim();
-
-
-  if (!name) {
-
-    alert("请输入姓名。");
-
-    return;
-
-  }
-
-
-  if (
-    state.people.includes(name)
-  ) {
-
-    alert("这个管理对象已经存在。");
-
-    return;
-
-  }
-
-
-  state.people.push(name);
-
-  state.currentPerson =
-    name;
-
-
-  input.value =
-    "";
-
-
-  saveData();
-
-  renderAll();
-
-  renderPeopleList();
-
-}
-
-
-/* =========================================================
-   32. 删除管理对象
-   ========================================================= */
-
-function deletePerson(name) {
-
-  if (
-    state.people.length <= 1
-  ) {
-
-    alert("至少需要保留一个管理对象。");
-
-    return;
-
-  }
-
-
-  const confirmed =
-    confirm(
-      `确定删除「${name}」吗？`
-    );
-
-
-  if (!confirmed) {
-    return;
-  }
-
-
-  state.people =
-    state.people.filter(
-      person =>
-        person !== name
-    );
-
-
-  /*
-   * 这里不删除该人的物品。
-   * 只是将物品重新归到当前管理对象，
-   * 避免数据丢失。
-   */
-
-  state.items =
-    state.items.map(item => {
-
-      if (
-        item.person === name
-      ) {
-
-        return {
-
-          ...item,
-
-          person:
-            state.people[0]
-
-        };
-
-      }
-
-      return item;
-
-    });
-
-
-  if (
-    state.currentPerson === name
-  ) {
-
-    state.currentPerson =
-      state.people[0];
-
-  }
-
-
-  saveData();
-
-  renderAll();
-
-  renderPeopleList();
-
-}
-
-
-/* =========================================================
-   33. Excel 导出
+   Excel 导出
    ========================================================= */
 
 function exportExcel() {
@@ -2564,11 +1867,10 @@ function exportExcel() {
   ) {
 
     alert(
-      "Excel 功能需要网络连接，请稍后再试。"
+      "Excel 功能需要网络连接。"
     );
 
     return;
-
   }
 
 
@@ -2576,12 +1878,13 @@ function exportExcel() {
     getCurrentItems();
 
 
-  if (items.length === 0) {
+  if (!items.length) {
 
-    alert("当前没有可以导出的物品。");
+    alert(
+      "当前没有可以导出的物品。"
+    );
 
     return;
-
   }
 
 
@@ -2597,14 +1900,23 @@ function exportExcel() {
       品牌:
         item.brand,
 
-      规格:
-        item.spec,
-
       分类:
         item.category,
 
+      规格:
+        item.spec,
+
       单位:
         item.unit,
+
+      总价格:
+        item.price,
+
+      购买数量:
+        item.purchaseQuantity,
+
+      均价:
+        item.averagePrice,
 
       当前余量:
         item.quantity,
@@ -2621,15 +1933,6 @@ function exportExcel() {
       购买日期:
         item.purchaseDate,
 
-      总价格:
-        item.price,
-
-      购买数量:
-        item.purchaseQuantity,
-
-      均价:
-        item.averagePrice,
-
       备注:
         item.notes
 
@@ -2641,10 +1944,8 @@ function exportExcel() {
       rows
     );
 
-
   const workbook =
     XLSX.utils.book_new();
-
 
   XLSX.utils.book_append_sheet(
     workbook,
@@ -2661,21 +1962,33 @@ function exportExcel() {
 
   XLSX.writeFile(
     workbook,
-    `物品管理_${state.currentPerson}_${date}.xlsx`
+    `物品管理_${date}.xlsx`
   );
-
 }
 
 
 /* =========================================================
-   34. Excel 导入
+   Excel 导入
    ========================================================= */
 
-function importExcel(file) {
+/*
+ * 你的 index.html 是：
+ *
+ * onchange="importExcel(event)"
+ *
+ * 所以这里必须接收 event。
+ */
 
-  if (
-    !file
-  ) {
+function importExcel(event) {
+
+  const file =
+    event &&
+    event.target
+      ? event.target.files[0]
+      : event;
+
+
+  if (!file) {
     return;
   }
 
@@ -2686,11 +1999,10 @@ function importExcel(file) {
   ) {
 
     alert(
-      "Excel 功能需要网络连接，请稍后再试。"
+      "Excel 功能需要网络连接。"
     );
 
     return;
-
   }
 
 
@@ -2699,13 +2011,13 @@ function importExcel(file) {
 
 
   reader.onload =
-    event => {
+    function(e) {
 
       try {
 
         const data =
           new Uint8Array(
-            event.target.result
+            e.target.result
           );
 
 
@@ -2733,21 +2045,17 @@ function importExcel(file) {
           );
 
 
-        if (
-          !rows.length
-        ) {
+        if (!rows.length) {
 
           alert(
             "Excel 中没有找到数据。"
           );
 
           return;
-
         }
 
 
-        let imported =
-          0;
+        let count = 0;
 
 
         rows.forEach(row => {
@@ -2755,22 +2063,36 @@ function importExcel(file) {
           const name =
             row["物品名称"] ||
             row["名称"] ||
-            row["物品"] ||
-            "";
+            row["物品"];
 
 
           if (
-            !String(name).trim()
+            !String(
+              name || ""
+            ).trim()
           ) {
-
             return;
-
           }
 
 
           const person =
-            row["管理对象"] ||
-            state.currentPerson;
+            String(
+              row["管理对象"] ||
+              state.currentPerson
+            );
+
+
+          if (
+            !state.people.includes(
+              person
+            )
+          ) {
+
+            state.people.push(
+              person
+            );
+
+          }
 
 
           const price =
@@ -2784,28 +2106,16 @@ function importExcel(file) {
           const purchaseQuantity =
             Number(
               row["购买数量"] ||
-              row["购买份数"] ||
               0
             ) || 0;
 
 
-          let averagePrice =
-            Number(
-              row["均价"] ||
-              0
-            ) || 0;
-
-
-          if (
+          const averagePrice =
             price > 0 &&
             purchaseQuantity > 0
-          ) {
-
-            averagePrice =
-              price /
-              purchaseQuantity;
-
-          }
+              ? price /
+                purchaseQuantity
+              : 0;
 
 
           state.items.push({
@@ -2814,30 +2124,45 @@ function importExcel(file) {
               generateId(),
 
             person:
-              String(person),
+              person,
 
             name:
-              String(name),
+              String(
+                name
+              ),
 
             brand:
               String(
-                row["品牌"] || ""
-              ),
-
-            spec:
-              String(
-                row["规格"] || ""
+                row["品牌"] ||
+                ""
               ),
 
             category:
               String(
-                row["分类"] || "其他"
+                row["分类"] ||
+                "其他"
+              ),
+
+            spec:
+              String(
+                row["规格"] ||
+                ""
               ),
 
             unit:
               String(
-                row["单位"] || "个"
+                row["单位"] ||
+                "个"
               ),
+
+            price:
+              price,
+
+            purchaseQuantity:
+              purchaseQuantity,
+
+            averagePrice:
+              averagePrice,
 
             quantity:
               Number(
@@ -2859,7 +2184,8 @@ function importExcel(file) {
 
             location:
               String(
-                row["存放位置"] || ""
+                row["存放位置"] ||
+                ""
               ),
 
             purchaseDate:
@@ -2867,43 +2193,20 @@ function importExcel(file) {
                 row["购买日期"]
               ),
 
-            price:
-              price,
-
-            purchaseQuantity:
-              purchaseQuantity,
-
-            averagePrice:
-              averagePrice,
-
             notes:
               String(
-                row["备注"] || ""
+                row["备注"] ||
+                ""
               ),
 
             createdAt:
-              Date.now() + imported
+              Date.now() +
+              count
 
           });
 
 
-          /* 如果 Excel 中出现新管理对象 */
-
-          if (
-            person &&
-            !state.people.includes(
-              String(person)
-            )
-          ) {
-
-            state.people.push(
-              String(person)
-            );
-
-          }
-
-
-          imported++;
+          count++;
 
         });
 
@@ -2914,14 +2217,14 @@ function importExcel(file) {
 
 
         alert(
-          `成功导入 ${imported} 条物品。`
+          `成功导入 ${count} 条物品。`
         );
 
 
       } catch (error) {
 
         console.error(
-          "Excel 导入失败：",
+          "Excel 导入失败:",
           error
         );
 
@@ -2938,30 +2241,43 @@ function importExcel(file) {
     file
   );
 
+
+  /*
+   * 允许再次选择同一个文件
+   */
+
+  if (
+    event &&
+    event.target
+  ) {
+
+    event.target.value =
+      "";
+
+  }
 }
 
 
 /* =========================================================
-   35. Excel 日期处理
+   Excel 日期
    ========================================================= */
 
-function normalizeExcelDate(value) {
+function normalizeExcelDate(
+  value
+) {
 
   if (
     value === null ||
     value === undefined ||
     value === ""
   ) {
-
     return "";
-
   }
 
 
-  /* 已经是标准日期 */
-
   if (
-    typeof value === "string"
+    typeof value ===
+    "string"
   ) {
 
     const text =
@@ -2969,19 +2285,19 @@ function normalizeExcelDate(value) {
 
 
     if (
-      /^\d{4}-\d{1,2}-\d{1,2}$/.test(
-        text
-      )
+      /^\d{4}-\d{1,2}-\d{1,2}$/
+        .test(text)
     ) {
 
       const parts =
         text.split("-");
 
-
       return [
         parts[0],
-        String(parts[1]).padStart(2, "0"),
-        String(parts[2]).padStart(2, "0")
+        String(parts[1])
+          .padStart(2, "0"),
+        String(parts[2])
+          .padStart(2, "0")
       ].join("-");
 
     }
@@ -2997,31 +2313,37 @@ function normalizeExcelDate(value) {
       )
     ) {
 
-      return formatDate(date);
+      return formatDate(
+        date
+      );
 
     }
 
   }
 
 
-  /* Excel serial number */
-
   if (
-    typeof value === "number"
+    typeof value ===
+    "number" &&
+    typeof XLSX !==
+    "undefined"
   ) {
 
     const date =
-      XLSX.SSF.parse_date_code(
-        value
-      );
+      XLSX.SSF
+        .parse_date_code(
+          value
+        );
 
 
     if (date) {
 
       return [
         date.y,
-        String(date.m).padStart(2, "0"),
-        String(date.d).padStart(2, "0")
+        String(date.m)
+          .padStart(2, "0"),
+        String(date.d)
+          .padStart(2, "0")
       ].join("-");
 
     }
@@ -3030,13 +2352,8 @@ function normalizeExcelDate(value) {
 
 
   return String(value);
-
 }
 
-
-/* =========================================================
-   36. 日期格式
-   ========================================================= */
 
 function formatDate(date) {
 
@@ -3053,27 +2370,24 @@ function formatDate(date) {
     ).padStart(2, "0")
 
   ].join("-");
-
 }
 
 
 /* =========================================================
-   37. JSON 备份
+   JSON 备份
    ========================================================= */
 
 function exportJSON() {
 
-  const data =
-    JSON.stringify(
-      state,
-      null,
-      2
-    );
-
-
   const blob =
     new Blob(
-      [data],
+      [
+        JSON.stringify(
+          state,
+          null,
+          2
+        )
+      ],
       {
         type:
           "application/json"
@@ -3093,17 +2407,11 @@ function exportJSON() {
     );
 
 
-  const date =
-    new Date()
-      .toISOString()
-      .slice(0, 10);
-
-
   a.href =
     url;
 
   a.download =
-    `物品管理备份_${date}.json`;
+    `物品管理备份_${formatDate(new Date())}.json`;
 
 
   document.body.appendChild(
@@ -3118,19 +2426,23 @@ function exportJSON() {
   URL.revokeObjectURL(
     url
   );
-
 }
 
 
 /* =========================================================
-   38. JSON 恢复
+   JSON 恢复
    ========================================================= */
 
-function importJSON(file) {
+function importJSON(event) {
 
-  if (!file) {
-    return;
-  }
+  const file =
+    event &&
+    event.target
+      ? event.target.files[0]
+      : event;
+
+
+  if (!file) return;
 
 
   const reader =
@@ -3138,13 +2450,13 @@ function importJSON(file) {
 
 
   reader.onload =
-    event => {
+    function(e) {
 
       try {
 
         const data =
           JSON.parse(
-            event.target.result
+            e.target.result
           );
 
 
@@ -3156,19 +2468,17 @@ function importJSON(file) {
         ) {
 
           throw new Error(
-            "JSON 格式不正确"
+            "JSON格式错误"
           );
 
         }
 
 
-        const confirmed =
-          confirm(
+        if (
+          !confirm(
             "恢复备份会覆盖当前数据，确定继续吗？"
-          );
-
-
-        if (!confirmed) {
+          )
+        ) {
           return;
         }
 
@@ -3176,19 +2486,16 @@ function importJSON(file) {
         state = {
 
           people:
-            Array.isArray(data.people) &&
+            Array.isArray(
+              data.people
+            ) &&
             data.people.length
               ? data.people
               : ["我"],
 
           currentPerson:
             data.currentPerson ||
-            (
-              Array.isArray(data.people) &&
-              data.people.length
-                ? data.people[0]
-                : "我"
-            ),
+            "我",
 
           items:
             data.items
@@ -3211,7 +2518,7 @@ function importJSON(file) {
       } catch (error) {
 
         console.error(
-          "JSON 恢复失败：",
+          "JSON恢复失败:",
           error
         );
 
@@ -3229,51 +2536,19 @@ function importJSON(file) {
     "utf-8"
   );
 
+
+  if (
+    event &&
+    event.target
+  ) {
+    event.target.value =
+      "";
+  }
 }
 
 
 /* =========================================================
-   39. 文件选择
-   ========================================================= */
-
-function handleExcelInput(event) {
-
-  const file =
-    event.target.files[0];
-
-  if (file) {
-
-    importExcel(file);
-
-  }
-
-
-  event.target.value =
-    "";
-
-}
-
-
-function handleJSONInput(event) {
-
-  const file =
-    event.target.files[0];
-
-  if (file) {
-
-    importJSON(file);
-
-  }
-
-
-  event.target.value =
-    "";
-
-}
-
-
-/* =========================================================
-   40. 总渲染
+   总渲染
    ========================================================= */
 
 function renderAll() {
@@ -3290,8 +2565,24 @@ function renderAll() {
 
 
 /* =========================================================
-   41. 兼容旧版按钮
+   全局函数
+   给 index.html 的 onclick / onchange 使用
    ========================================================= */
+
+window.changePerson =
+  changePerson;
+
+window.openPeopleModal =
+  openPeopleModal;
+
+window.closePeopleModal =
+  closePeopleModal;
+
+window.addPerson =
+  addPerson;
+
+window.deletePerson =
+  deletePerson;
 
 window.openItemModal =
   openItemModal;
@@ -3308,83 +2599,26 @@ window.deleteItem =
 window.changeQuantity =
   changeQuantity;
 
-window.openPeopleModal =
-  openPeopleModal;
-
-window.closePeopleModal =
-  closePeopleModal;
-
-window.addPerson =
-  addPerson;
-
-window.deletePerson =
-  deletePerson;
-
 window.exportExcel =
   exportExcel;
-
-window.exportJSON =
-  exportJSON;
 
 window.importExcel =
   importExcel;
 
+window.exportJSON =
+  exportJSON;
+
 window.importJSON =
   importJSON;
 
-window.handleExcelInput =
-  handleExcelInput;
-
-window.handleJSONInput =
-  handleJSONInput;
-
-window.renderAll =
-  renderAll;
-
-
-/* =========================================================
-   42. 兼容 HTML 中的 onchange
-   ========================================================= */
+window.updateAveragePrice =
+  updateAveragePrice;
 
 window.updateAveragePreview =
   updateAveragePreview;
 
+window.renderItems =
+  renderItems;
 
-/* =========================================================
-   43. 自动监听 Excel / JSON input
-   ========================================================= */
-
-document.addEventListener(
-  "change",
-  event => {
-
-    if (
-      event.target.id ===
-      "excelInput"
-    ) {
-
-      handleExcelInput(
-        event
-      );
-
-    }
-
-
-    if (
-      event.target.id ===
-      "jsonInput"
-    ) {
-
-      handleJSONInput(
-        event
-      );
-
-    }
-
-  }
-);
-
-
-/* =========================================================
-   完成
-   ========================================================= */
+window.renderAll =
+  renderAll;
