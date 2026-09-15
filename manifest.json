@@ -1,0 +1,11 @@
+{
+  "name": "我的物品管理",
+  "short_name": "物品管理",
+  "description": "管理物品、库存和到期日期",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f6fa",
+  "theme_color": "#2563eb",
+  "orientation": "portrait",
+  "icons": []
+}
