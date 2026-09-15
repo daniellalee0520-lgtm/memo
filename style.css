@@ -1,0 +1,1099 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+
+  margin: 0;
+
+  background: #f4f6fa;
+
+  color: #172033;
+
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "PingFang SC",
+    "Microsoft YaHei",
+    sans-serif;
+}
+
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+
+button {
+  cursor: pointer;
+}
+
+
+/* =========================
+   APP
+========================= */
+
+.app {
+
+  width: 100%;
+
+  max-width: 1100px;
+
+  margin: auto;
+
+  padding:
+    20px
+    20px
+    50px;
+
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-bottom: 15px;
+
+}
+
+
+.header h1 {
+
+  margin: 0;
+
+  font-size: 28px;
+
+}
+
+
+.header p {
+
+  margin:
+    5px
+    0
+    0;
+
+  color: #6b7280;
+
+  font-size: 14px;
+
+}
+
+
+/* =========================
+   BUTTON
+========================= */
+
+.primary-btn {
+
+  border: none;
+
+  background: #2563eb;
+
+  color: white;
+
+  padding:
+    11px
+    17px;
+
+  border-radius: 11px;
+
+  font-weight: 600;
+
+}
+
+
+.primary-btn:active {
+
+  transform: scale(.97);
+
+}
+
+
+.secondary-btn {
+
+  border: 1px solid #d9dee8;
+
+  background: white;
+
+  padding:
+    10px
+    15px;
+
+  border-radius: 10px;
+
+}
+
+
+.icon-text-btn {
+
+  border: 1px solid #d9dee8;
+
+  background: white;
+
+  border-radius: 10px;
+
+  width: 45px;
+
+  height: 43px;
+
+}
+
+
+/* =========================
+   PERSON
+========================= */
+
+.person-bar {
+
+  display: flex;
+
+  gap: 8px;
+
+  margin-bottom: 16px;
+
+}
+
+
+.person-bar select {
+
+  flex: 1;
+
+  padding: 11px;
+
+  border:
+    1px solid
+    #d9dee8;
+
+  border-radius: 10px;
+
+  background: white;
+
+}
+
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.dashboard {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 10px;
+
+  margin-bottom: 15px;
+
+}
+
+
+.stat-card {
+
+  background: white;
+
+  border:
+    1px solid
+    #e5e9f0;
+
+  border-radius: 15px;
+
+  padding: 15px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+}
+
+
+.stat-icon {
+
+  font-size: 25px;
+
+}
+
+
+.stat-number {
+
+  font-size: 25px;
+
+  font-weight: 700;
+
+}
+
+
+.stat-label {
+
+  color: #6b7280;
+
+  font-size: 12px;
+
+}
+
+
+.stat-card.danger {
+
+  border-left:
+    4px solid
+    #ef4444;
+
+}
+
+
+.stat-card.warning {
+
+  border-left:
+    4px solid
+    #f59e0b;
+
+}
+
+
+/* =========================
+   SEARCH
+========================= */
+
+.search-box {
+
+  margin-bottom: 10px;
+
+}
+
+
+.search-input-wrap {
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  background: white;
+
+  border:
+    1px solid
+    #d9dee8;
+
+  border-radius: 12px;
+
+  padding:
+    0
+    13px;
+
+}
+
+
+.search-input-wrap input {
+
+  border: none;
+
+  outline: none;
+
+  flex: 1;
+
+  padding:
+    13px
+    0;
+
+  background: transparent;
+
+}
+
+
+/* =========================
+   FILTER
+========================= */
+
+.filters {
+
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr
+    1fr;
+
+  gap: 9px;
+
+  margin-bottom: 12px;
+
+}
+
+
+.filters select {
+
+  width: 100%;
+
+  padding: 10px;
+
+  border:
+    1px solid
+    #d9dee8;
+
+  border-radius: 10px;
+
+  background: white;
+
+}
+
+
+/* =========================
+   QUICK ACTIONS
+========================= */
+
+.quick-actions {
+
+  display: flex;
+
+  gap: 8px;
+
+  margin-bottom: 18px;
+
+}
+
+
+.quick-actions button,
+.quick-actions label {
+
+  border:
+    1px solid
+    #d9dee8;
+
+  background: white;
+
+  border-radius: 9px;
+
+  padding:
+    8px
+    12px;
+
+  font-size: 13px;
+
+}
+
+
+.quick-actions input {
+
+  display: none;
+
+}
+
+
+/* =========================
+   ITEMS
+========================= */
+
+.items-list {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, 1fr);
+
+  gap: 12px;
+
+}
+
+
+.item-card {
+
+  background: white;
+
+  border:
+    1px solid
+    #e4e8ef;
+
+  border-radius: 16px;
+
+  padding: 16px;
+
+}
+
+
+.item-header {
+
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+}
+
+
+.item-name {
+
+  font-size: 18px;
+
+  font-weight: 700;
+
+}
+
+
+.item-subtitle {
+
+  color: #6b7280;
+
+  font-size: 12px;
+
+  margin-top: 4px;
+
+}
+
+
+.badges {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+
+  margin:
+    12px
+    0;
+
+}
+
+
+.badge {
+
+  padding:
+    5px
+    8px;
+
+  border-radius: 999px;
+
+  background: #eef2f7;
+
+  font-size: 11px;
+
+}
+
+
+.badge.red {
+
+  background: #fee2e2;
+
+  color: #b91c1c;
+
+}
+
+
+.badge.orange {
+
+  background: #ffedd5;
+
+  color: #c2410c;
+
+}
+
+
+.badge.green {
+
+  background: #dcfce7;
+
+  color: #15803d;
+
+}
+
+
+.badge.blue {
+
+  background: #dbeafe;
+
+  color: #1d4ed8;
+
+}
+
+
+/* =========================
+   QUANTITY
+========================= */
+
+.quantity-box {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  background: #f8fafc;
+
+  border-radius: 11px;
+
+  padding: 10px;
+
+  margin-bottom: 10px;
+
+}
+
+
+.quantity-number {
+
+  font-size: 21px;
+
+  font-weight: 700;
+
+}
+
+
+.quantity-controls {
+
+  display: flex;
+
+  gap: 5px;
+
+}
+
+
+.quantity-controls button {
+
+  width: 35px;
+
+  height: 35px;
+
+  border:
+    1px solid
+    #d9dee8;
+
+  background: white;
+
+  border-radius: 8px;
+
+  font-size: 18px;
+
+}
+
+
+.item-details {
+
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap: 7px;
+
+}
+
+
+.detail {
+
+  background: #f8fafc;
+
+  border-radius: 8px;
+
+  padding: 8px;
+
+  font-size: 12px;
+
+}
+
+
+.detail-label {
+
+  color: #6b7280;
+
+  font-size: 10px;
+
+  margin-bottom: 3px;
+
+}
+
+
+.item-notes {
+
+  margin-top: 9px;
+
+  font-size: 12px;
+
+  color: #6b7280;
+
+}
+
+
+.item-actions {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 7px;
+
+  margin-top: 12px;
+
+}
+
+
+.item-actions button {
+
+  border:
+    1px solid
+    #d9dee8;
+
+  background: white;
+
+  border-radius: 8px;
+
+  padding:
+    7px
+    10px;
+
+  font-size: 12px;
+
+}
+
+
+/* =========================
+   EMPTY
+========================= */
+
+.empty-state {
+
+  text-align: center;
+
+  padding:
+    70px
+    20px;
+
+  color: #6b7280;
+
+}
+
+
+.empty-icon {
+
+  font-size: 48px;
+
+}
+
+
+.hidden {
+
+  display: none !important;
+
+}
+
+
+/* =========================
+   MODAL
+========================= */
+
+.modal {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 100;
+
+  background:
+    rgba(
+      15,
+      23,
+      42,
+      .5
+    );
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 15px;
+
+}
+
+
+.modal-content {
+
+  background: white;
+
+  width:
+    min(
+      720px,
+      100%
+    );
+
+  max-height: 92vh;
+
+  overflow-y: auto;
+
+  border-radius: 18px;
+
+  padding: 20px;
+
+}
+
+
+.small-modal {
+
+  width:
+    min(
+      520px,
+      100%
+    );
+
+}
+
+
+.modal-header {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+
+}
+
+
+.modal-header h2 {
+
+  margin: 0;
+
+}
+
+
+.close-btn {
+
+  border: none;
+
+  background: none;
+
+  font-size: 30px;
+
+  color: #64748b;
+
+}
+
+
+.modal-content label {
+
+  display: block;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  margin-bottom: 13px;
+
+}
+
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+
+  display: block;
+
+  width: 100%;
+
+  margin-top: 6px;
+
+  padding: 10px;
+
+  border:
+    1px solid
+    #d9dee8;
+
+  border-radius: 9px;
+
+  background: white;
+
+  outline: none;
+
+}
+
+
+.modal-content textarea {
+
+  resize: vertical;
+
+}
+
+
+.two-columns {
+
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr;
+
+  gap: 12px;
+
+}
+
+
+.three-columns {
+
+  display: grid;
+
+  grid-template-columns:
+    1fr
+    1fr
+    1fr;
+
+  gap: 12px;
+
+}
+
+
+.modal-actions {
+
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 8px;
+
+  margin-top: 20px;
+
+}
+
+
+/* =========================
+   PEOPLE
+========================= */
+
+.person-row {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding:
+    12px
+    0;
+
+  border-bottom:
+    1px solid
+    #edf0f5;
+
+}
+
+
+.person-name {
+
+  font-weight: 600;
+
+}
+
+
+.person-delete {
+
+  border:
+    1px solid
+    #fecaca;
+
+  background: #fff;
+
+  color: #dc2626;
+
+  padding:
+    6px
+    9px;
+
+  border-radius: 8px;
+
+}
+
+
+.add-person {
+
+  display: flex;
+
+  gap: 8px;
+
+  margin-top: 15px;
+
+}
+
+
+.add-person input {
+
+  flex: 1;
+
+}
+
+
+.small-text {
+
+  color: #6b7280;
+
+  font-size: 12px;
+
+}
+
+
+/* =========================
+   TOAST
+========================= */
+
+.toast {
+
+  position: fixed;
+
+  bottom: 25px;
+
+  left: 50%;
+
+  transform:
+    translate(-50%, 20px);
+
+  background: #172033;
+
+  color: white;
+
+  padding:
+    10px
+    16px;
+
+  border-radius: 10px;
+
+  opacity: 0;
+
+  pointer-events: none;
+
+  transition: .2s;
+
+  z-index: 200;
+
+}
+
+
+.toast.show {
+
+  opacity: 1;
+
+  transform:
+    translate(-50%, 0);
+
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width: 750px) {
+
+  .app {
+
+    padding:
+      13px
+      13px
+      40px;
+
+  }
+
+
+  .header h1 {
+
+    font-size: 23px;
+
+  }
+
+
+  .header p {
+
+    font-size: 12px;
+
+  }
+
+
+  .dashboard {
+
+    grid-template-columns:
+      1fr
+      1fr;
+
+  }
+
+
+  .stat-card:first-child {
+
+    grid-column:
+      1 / -1;
+
+  }
+
+
+  .items-list {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .filters {
+
+    grid-template-columns:
+      1fr
+      1fr;
+
+  }
+
+
+  .filters select:last-child {
+
+    grid-column:
+      1 / -1;
+
+  }
+
+
+  .two-columns,
+  .three-columns {
+
+    grid-template-columns:
+      1fr;
+
+  }
+
+
+  .quick-actions {
+
+    overflow-x: auto;
+
+  }
+
+
+  .quick-actions button,
+  .quick-actions label {
+
+    white-space: nowrap;
+
+  }
+
+}
